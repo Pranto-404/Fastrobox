@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>$team_id Level 02 write-up</title>
+<style>
+  @page { size: A4; margin: 8mm 10mm 8mm 10mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8.3pt; line-height: 1.28; color: #111; margin: 0; }
+  header { border-bottom: 2px solid #1f3a5f; padding-bottom: 3px; margin-bottom: 5px; }
+  header h1 { font-size: 13pt; margin: 0; color: #1f3a5f; }
+  header .meta { font-size: 8pt; color: #333; margin-top: 2px; }
+  h2 { font-size: 10pt; color: #fff; background: #1f3a5f; padding: 2px 6px; margin: 6px 0 3px; }
+  p { margin: 2px 0 4px; }
+  ul { margin: 2px 0 4px; padding-left: 14px; }
+  li { margin: 1px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 3px 0 5px; }
+  th, td { border: 1px solid #b9c3cf; padding: 1.5px 4px; vertical-align: top; text-align: left; }
+  th { background: #e8eef5; font-weight: bold; }
+  td.c, th.c { text-align: center; white-space: nowrap; }
+  tr.grp td { background: #f3f5f8; font-weight: bold; color: #1f3a5f; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 7.8pt; background: #f1f3f6; padding: 0 2px; }
+  pre { font-family: Consolas, "Courier New", monospace; font-size: 7.4pt; background: #f1f3f6; padding: 3px 5px; margin: 2px 0 4px; white-space: pre-wrap; }
+  .fill { background: #fff176; padding: 0 3px; }
+  .pass { color: #1b5e20; font-weight: bold; }
+  .two { display: flex; gap: 8px; }
+  .two > div { flex: 1; min-width: 0; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+  .shots figure { margin: 0; }
+  figure { margin: 2px 0; }
+  figcaption { font-size: 7.4pt; color: #444; }
+  img.shot { width: 100%; height: auto; object-fit: contain; object-position: left top; border: 1px solid #b9c3cf; display: block; }
+  .shot.missing { height: 32mm; border: 1.5px dashed #c62828; color: #c62828; display: flex; align-items: center; justify-content: center; font-size: 7.6pt; }
+  img.diagram { width: 100%; display: block; }
+  table.tight th, table.tight td { padding: 1px 3px; font-size: 7.8pt; }
+  .small { font-size: 7.8pt; margin: 1px 0; }
+  figure.mini img.shot { height: 19mm; }
+  figure.mini .shot.missing { height: 19mm; }
+  .two pre { font-size: 6.9pt; padding: 2px 4px; }
+  .pagebreak { break-before: page; }
+  svg text { font-family: Arial, sans-serif; }
+  .lead { font-size: 8.6pt; }
+  .log { font-family: Consolas, "Courier New", monospace; font-size: 7.1pt; background: #0f1b2b; color: #d7e3f4; padding: 5px 7px; border-radius: 4px; margin: 3px 0 4px; line-height: 1.35; }
+  .log b { color: #8fd18f; font-weight: normal; } .log i { color: #ffcf6e; font-style: normal; }
+  .chip { display: inline-block; padding: 0 5px; border-radius: 3px; background: #e8eef5; font-size: 7.6pt; }
+  .k { color: #1f3a5f; font-weight: bold; }
+</style>
+</head><body>
+<header>
+  <h1>FastRobox 1.0 &middot; Team $team_id &middot; Level 02: Wi-Fi Setup and Secure Telemetry (45 marks)</h1>
+  <div class="meta">Git tag <b>$git_tag</b> &middot; commit <b>$commit</b> &middot; firmware <b>fw=$fw</b> &middot; platform <b>https://fastrobox-t07.onrender.com</b> (Render, Singapore) &middot; date $date</div>
+</header>
+
+<h2>1. Design</h2>
+<p class="lead">We wanted a teacher or technician to be able to set the box up with nothing but a phone, and we wanted every reading to reach the cloud exactly once, even when the network is unreliable. The firmware from Level 1 keeps running. We added four parts to it, each a FreeRTOS task on core 0:</p>
+<ul>
+  <li><b>wifi</b>: setup access point, joining and re-joining the network, mDNS and internet time.</li>
+  <li><b>web</b>: serves the setup page and the local status page.</li>
+  <li><b>telem</b> (core 1): takes one reading every 5 s.</li>
+  <li><b>uplink</b>: sends everything to the server over HTTPS.</li>
+</ul>
+<p class="lead">Readings and events do not go straight to the network. They first go into an <b>outbox</b>, and leave it only when the server has confirmed it holds them.</p>
+<figure>
+<svg viewBox="0 0 900 250" width="100%" style="display:block">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker></defs>
+  <rect x="8" y="8" width="300" height="234" rx="10" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/>
+  <text x="20" y="30" font-size="15" font-weight="bold" fill="#e65100">ESP32-S3 &middot; device T07-D1</text>
+  <g font-size="12.5">
+    <rect x="20" y="42" width="276" height="38" rx="6" fill="#fff" stroke="#bbb"/><text x="30" y="58">Setup AP <tspan font-weight="bold">SmartClass-T07</tspan> (8-char password)</text><text x="30" y="73" font-size="11" fill="#555">192.168.4.1: Wi-Fi, Room ID, token &rarr; NVS</text>
+    <rect x="20" y="88" width="276" height="38" rx="6" fill="#fff" stroke="#bbb"/><text x="30" y="104">Local status page (LittleFS)</text><text x="30" y="119" font-size="11" fill="#555">http://&lt;IP&gt; &middot; http://smartclass-t07.local &middot; refresh 1 s</text>
+    <rect x="20" y="134" width="276" height="38" rx="6" fill="#fff" stroke="#bbb"/><text x="30" y="150">Outbox (RAM, 360 records)</text><text x="30" y="165" font-size="11" fill="#555">seq lease in NVS &middot; ts = reading time</text>
+    <rect x="20" y="180" width="276" height="50" rx="6" fill="#e3f2fd" stroke="#1565c0"/><text x="30" y="197" font-weight="bold" fill="#0d47a1">Uplink: HTTPS + server certificate check</text><text x="30" y="212" font-size="11" fill="#333">Bearer device token &middot; keep-alive &middot; oldest first</text><text x="30" y="225" font-size="11" fill="#333">a record leaves only on 201 (stored) or 409 (had it)</text>
+  </g>
+  <rect x="330" y="95" width="120" height="60" rx="10" fill="#eceff1" stroke="#78909c"/><text x="390" y="120" font-size="12.5" text-anchor="middle">Phone hotspot</text><text x="390" y="137" font-size="11" text-anchor="middle" fill="#555">2.4 GHz, WPA2</text>
+  <path d="M296,205 C320,205 315,150 330,135" stroke="#37474f" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+  <path d="M450,125 L520,125" stroke="#37474f" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+  <text x="485" y="114" font-size="10.5" text-anchor="middle" fill="#37474f">HTTPS 443</text>
+  <rect x="522" y="8" width="370" height="170" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="534" y="30" font-size="15" font-weight="bold" fill="#1b5e20">Cloud platform (Render, Singapore)</text>
+  <g font-size="12.5">
+    <rect x="534" y="40" width="200" height="74" rx="6" fill="#fff" stroke="#bbb"/><text x="544" y="57" font-weight="bold">FastAPI</text><text x="544" y="73" font-size="11">POST /telemetry, /events</text><text x="544" y="88" font-size="11">GET /commands (1 s heartbeat)</text><text x="544" y="103" font-size="11">silent 12 s &rarr; OFFLINE</text>
+    <rect x="744" y="40" width="138" height="74" rx="6" fill="#fff" stroke="#bbb"/><text x="754" y="57" font-weight="bold">PostgreSQL</text><text x="754" y="73" font-size="11">telemetry, events</text><text x="754" y="88" font-size="11">seen_seq (device, seq)</text><text x="754" y="103" font-size="11">online/offline log</text>
+    <path d="M734,77 L742,77" stroke="#37474f" stroke-width="2" marker-end="url(#ar)"/>
+    <rect x="534" y="122" width="348" height="46" rx="6" fill="#fff" stroke="#bbb"/><text x="544" y="139">Records page (admin login): newest rows every 1 s,</text><text x="544" y="155" font-size="11">&Delta;ts between readings, ONLINE/OFFLINE, replay test button</text>
+  </g>
+  <rect x="522" y="188" width="370" height="54" rx="10" fill="#fff" stroke="#90a4ae" stroke-dasharray="5 4"/>
+  <text x="534" y="206" font-size="12" font-weight="bold" fill="#546e7a">Same server, later levels</text>
+  <text x="534" y="222" font-size="11" fill="#546e7a">dashboard + roles + phone alerts (L4) &middot; weather + AI assistant (L6)</text>
+  <text x="534" y="236" font-size="11" fill="#546e7a">face and vision models (L7&ndash;L10) &middot; CSI model (L11)</text>
+</svg>
+<figcaption>Fig. 1: System architecture: device, server, database, and where the dashboard, weather and AI services attach in later levels.</figcaption>
+</figure>
+
+<h2>2. Where it shows</h2>
+<table class="tight">
+  <tr><th style="width:19%">Surface</th><th>What Level 2 shows</th></tr>
+  <tr><td>Serial Monitor</td><td>The AP password at start-up and the setup error. <code>[NET]</code> lines for connecting, IP + mDNS name, disconnect / reconnect, and for every server connect, disconnect and reconnect (Fig. 2).</td></tr>
+  <tr><td>Local status page</td><td>Room ID, Dhaka time, temperature, humidity, status, flame, door, last card UID, Wi-Fi signal, chip temperature, firmware, connection <b>LIVE</b>. Served from LittleFS at the device IP and at <code>smartclass-t07.local</code>, refreshing every second.</td></tr>
+  <tr><td>Light</td><td>Blue heartbeat in setup mode and whenever the server is not reachable; green once connected and Safe.</td></tr>
+  <tr><td>Database</td><td>A telemetry row every 5 s with every field, <code>CARD_TAP</code> and <code>BOOT</code> events, and the device's online/offline state (Fig. 3&ndash;5).</td></tr>
+</table>
+<div class="log"><span style="color:#90a4ae">// excerpts from our Serial Monitor on 13 Nov (AP password masked here)</span><br>
+[NET] setup mode: access point SmartClass-T07 password=e5ck&bull;&bull;&bull;&bull;, open http://192.168.4.1<br>
+[NET] setup saved: network "Habib", room "R-305" &nbsp;<span style="color:#90a4ae">(up=51s)</span><br>
+[NET] connecting to "Habib" (attempt 1)<br>
+<i>[NET] setup error: Could not join "Habib": wrong password</i> &nbsp;<span style="color:#90a4ae">(up=55s, 4 s later)</span><br>
+<b>[NET] Wi-Fi reconnected IP=192.168.68.141 mDNS=http://smartclass-t07.local RSSI=-48</b><br>
+[NET] internet time set: 2026-11-13 13:58:13 (Asia/Dhaka)<br>
+[CMD] reset: clearing saved Wi-Fi details &rarr; [EVENT] BOOT reason=SOFTWARE &rarr; setup mode</div>
+<div style="font-size:7.4pt;color:#444;margin-top:-2px">Fig. 2: Serial Monitor lines for setup, a wrong password, connecting and reset.</div>
+<figure style="margin-top:4px">$img_records_live<figcaption>Fig. 3: Records page: telemetry from T07-D1 in room R-305, one row every 5 s (&Delta;ts), every field filled, device ONLINE.</figcaption></figure>
+
+<h2>3. Test results</h2>
+<table class="tight">
+  <tr><th class="c">#</th><th>Check</th><th class="c">Limit</th><th>Measured</th><th class="c">Seen in</th><th class="c">Result</th></tr>
+  <tr class="grp"><td colspan="6">Live checks (Judges' Checklist A3, A4, A6)</td></tr>
+  <tr><td class="c">1</td><td>No saved network &rarr; AP <code>SmartClass-T07</code>, password printed, setup page 192.168.4.1, blue light</td><td class="c">&ndash;</td><td>as required (Fig. 2)</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">2</td><td>Setup page lists networks with signal strength and asks for password, Room ID and token</td><td class="c">&ndash;</td><td>all four fields; Room ID and token kept after <code>reset</code></td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">3</td><td>Device joins the hotspot and prints its IP and mDNS name; both addresses open the local page</td><td class="c">&ndash;</td><td>192.168.68.141, smartclass-t07.local</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">4</td><td>Local page updates after a card tap</td><td class="c">&le; 2 s</td><td>page refreshes every 1 s</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">5</td><td>A record every 5 &plusmn; 1 s with every field</td><td class="c">5 &plusmn; 1 s</td><td>&Delta;ts = 5 s (52 rows in a row, Fig. 3)</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">6</td><td>Card tap stored with its UID</td><td class="c">&ndash;</td><td><code>CARD_TAP 216DE766</code> (Fig. 5)</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">7</td><td>Old message sent again with the same seq</td><td class="c">rejected</td><td>HTTP 409; rows with that seq = 1; count unchanged</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">8</td><td>Board unplugged for 40 s &rarr; platform shows OFFLINE</td><td class="c">&le; 30 s</td><td>29 s (last row 14:06:21, OFFLINE 14:06:50, Fig. 4). Later tightened to 12 s.</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">9</td><td>Plugged back in &rarr; ONLINE, <code>BOOT</code> event, no setup</td><td class="c">&ndash;</td><td>BOOT 14:06:57, ONLINE 14:07:07</td><td class="c">live</td><td class="c pass">PASS</td></tr>
+  <tr class="grp"><td colspan="6">Video items</td></tr>
+  <tr><td class="c">10</td><td>Hotspot off 20 s &rarr; reconnects without restarting</td><td class="c">&le; 30 s</td><td>uptime 63&rarr;68&rarr;73&rarr;78 s with no gap; no BOOT event (Fig. 5)</td><td class="c">video</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">11</td><td>BOOT held 5 s &rarr; access point returns</td><td class="c">&ndash;</td><td>setup AP back, light blue</td><td class="c">video</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">12</td><td>Wrong hotspot password &rarr; back in setup mode, error on the page</td><td class="c">&le; 15 s</td><td>4 s (up=51 &rarr; 55, Fig. 2)</td><td class="c">video</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">13</td><td>Backend stopped 20 s &rarr; records resume without resetting the device</td><td class="c">&le; 30 s</td><td>resumed after the service was Live again; no BOOT event</td><td class="c">video</td><td class="c pass">PASS</td></tr>
+</table>
+<div class="two">
+  <div><figure>$img_power_cut<figcaption>Fig. 4: Unplugged at 14:06:21: OFFLINE at 14:06:50, BOOT at 14:06:57, ONLINE at 14:07:07, with the 40 s gap visible in &Delta;ts.</figcaption></figure></div>
+  <div><figure>$img_hotspot<figcaption>Fig. 5: Hotspot switched off after 14:26:26 (rssi empty). Uptime keeps counting, the readings taken offline arrive later with their own times, and no BOOT appears.</figcaption></figure></div>
+</div>
+
+<h2>4. Problems and fixes</h2>
+<table class="tight">
+  <tr><th style="width:46%">What went wrong in practice</th><th>What we changed</th></tr>
+  <tr><td>Every upload was refused with 401: the token had been pasted together with its <code>T07-D1=</code> label.</td><td>Both the device and the server now drop that label, so either form works.</td></tr>
+  <tr><td>On the very first start the board restarted after ~40 s: formatting the 8 MB file system kept the web task away from the watchdog.</td><td>The pages are installed first, and only then does the task join the watchdog.</td></tr>
+  <tr><td>Power-ups were logged as <code>BROWNOUT</code>: full Wi-Fi transmit power pulled the USB supply down.</td><td>Transmit power set to 15 dBm. The hotspot still sees about &minus;45 dBm.</td></tr>
+  <tr><td>OFFLINE appeared after 29 s, uncomfortably close to the 30 s limit.</td><td>The device now checks in every second; the server marks it offline after 12 s of silence and checks every 2 s.</td></tr>
+  <tr><td>A rare start-up crash loop (<code>tcpip_send_msg_wait_sem</code>): the web server opened its socket before Wi-Fi had started.</td><td>The web task waits until the Wi-Fi task has brought the network stack up.</td></tr>
+</table>
+
+<h2>5. Level 2 extra items</h2>
+<ul>
+  <li><span class="k">How the setup page saves the details:</span> the network name, password, Room ID and device token are written to NVS (flash).
+    <ul>
+      <li>The details are marked <i>verified</i> once they have connected.</li>
+      <li>The 8-character AP password is generated once, from letters that cannot be confused with each other, and kept.</li>
+      <li><code>reset</code> or a 5 s BOOT press clears only the Wi-Fi details.</li>
+    </ul></li>
+  <li><span class="k">Reconnection strategy:</span>
+    <ul>
+      <li>New details that fail within 12 s send the device back to setup mode, with the reason on the page (wrong password / network not found).</li>
+      <li>Verified details never fall back to setup. The device keeps retrying with gaps of 1, 2, 4 and then 8 s, so it is back within about 15 s of the hotspot returning.</li>
+      <li>Level 1 keeps running the whole time.</li>
+    </ul></li>
+  <li><span class="k">mDNS:</span> <code>smartclass-t07.local</code> (HTTP service), restarted on every connection.</li>
+  <li><span class="k">Replays rejected:</span> the table <code>seen_seq</code> has the primary key (device_id, seq), shared by telemetry and events.
+    <ul>
+      <li>A message sent twice gets HTTP 409 and is not stored again.</li>
+      <li><code>seq</code> comes from a lease saved in NVS, so it never repeats after a restart.</li>
+    </ul></li>
+  <li><span class="k">HTTPS with the server certificate checked:</span> <code>WiFiClientSecure.setCACert()</code> with a bundle of public root CAs (ISRG, Google Trust Services, DigiCert, USERTrust, Amazon). A certificate that does not chain to one of them fails the handshake. Every request carries the device token as a Bearer header.</li>
+  <li><span class="k">No password, key or token in the repository:</span>
+    <ul>
+      <li>The device token is typed on the setup page.</li>
+      <li>The server reads <code>DATABASE_URL</code>, <code>DEVICE_TOKENS</code> and <code>ADMIN_PASSWORD</code> from Render environment variables.</li>
+      <li><code>.env</code> files are git-ignored.</li>
+    </ul></li>
+  <li><span class="k">README</span> explains how to build and run the firmware and the platform. Architecture: Fig. 1.</li>
+</ul>
+</body></html>

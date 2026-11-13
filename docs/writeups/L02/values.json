@@ -1,0 +1,13 @@
+{
+  "_help": "Run: python3 tools/writeup/build.py L02",
+  "team_id": "T07",
+  "date": "2026-11-13",
+  "git_tag": "level-02",
+  "commit": "b91b703",
+  "fw": "1.0.0",
+  "screens": {
+    "records_live": "records_live.png",
+    "power_cut": "power_cut.png",
+    "hotspot": "hotspot.png"
+  }
+}
