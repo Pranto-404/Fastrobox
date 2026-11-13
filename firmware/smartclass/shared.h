@@ -10,7 +10,8 @@ struct DeviceState {
   float rh = 0;
   bool dhtError = false;
   // Flame
-  bool flame = false;
+  bool flame = false;          // raw reading (every 100 ms)
+  uint32_t lastFlameMs = 0;    // millis() of the last reading that saw flame
   // RFID
   bool rfidError = false;
   char lastUid[24] = "";

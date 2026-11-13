@@ -6,6 +6,11 @@
 
 static volatile bool registerNextTag = false;
 
+// A candle flickers, so the sensor output drops for a moment now and then.
+static bool flameRecently(const DeviceState &s, uint32_t windowMs) {
+  return s.lastFlameMs && millis() - s.lastFlameMs < windowMs;
+}
+
 // ---------- heat index (NOAA / Rothfusz, with the simple formula below 80 F) ----------
 static float heatIndexC(float tC, float rh) {
   float t = tC * 9.0f / 5.0f + 32.0f;
@@ -44,7 +49,7 @@ void safetyResetFire(const char *by) {
     logf("[CMD] Reset fire: no fire latched");
     return;
   }
-  if (s.flame) {
+  if (flameRecently(s, FLAME_RECENT_MS)) {
     logf("[CMD] Reset fire refused: flame still present");
     setNotice("RESET REFUSED - FLAME PRESENT");
     return;
@@ -79,7 +84,7 @@ void safetyOnCardTap(const char *uid) {
     logf("[CARD] uid=%s is not a Teacher tag: cannot silence the fire alarm", uid);
     return;
   }
-  if (s.flame) {
+  if (flameRecently(s, FLAME_RECENT_MS)) {
     logf("[CARD] Teacher tag refused: CANNOT SILENCE - FLAME PRESENT");
     setNotice("CANNOT SILENCE - FLAME PRESENT");
     return;
@@ -171,8 +176,8 @@ static void safetyTask(void *) {
     }
     if (good != s.qualityGood) withState([&](DeviceState &st) { st.qualityGood = good; });
 
-    // Fire: flame seen continuously for 2 s -> FIRE at once (no 3 s hold).
-    if (s.flame) {
+    // Fire: flame seen continuously for 2 s -> FIRE at once (no 3 s hold). Gaps < 300 ms are flicker.
+    if (flameRecently(s, FLAME_GAP_MS)) {
       if (!flameSince) flameSince = now;
       if (!s.fire && now - flameSince >= FIRE_HOLD_MS) latchFire();
     } else {
@@ -188,12 +193,13 @@ static void safetyTask(void *) {
 static void touchTask(void *) {
   esp_task_wdt_add(NULL);
   uint32_t thr = (uint32_t)(stateSnapshot().touchBaseline * TOUCH_RATIO);
-  uint32_t touchSince = 0, panicStart = 0;
+  uint32_t touchSince = 0, lastTouched = 0, panicStart = 0;
   bool fired = false;
   TickType_t last = xTaskGetTickCount();
   for (;;) {
     uint32_t now = millis();
-    bool touched = touchRead(PIN_TOUCH) > thr;  // on the ESP32-S3 the reading rises when touched
+    if (touchRead(PIN_TOUCH) > thr) lastTouched = now;  // on the ESP32-S3 the reading rises when touched
+    bool touched = lastTouched && now - lastTouched < TOUCH_GAP_MS;
     if (touched) {
       if (!touchSince) touchSince = now;
       if (!fired && now - touchSince >= PANIC_HOLD_MS) {

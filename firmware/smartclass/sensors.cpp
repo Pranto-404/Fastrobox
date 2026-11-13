@@ -53,7 +53,11 @@ static void flameTask(void *) {
   TickType_t last = xTaskGetTickCount();
   for (;;) {
     bool flame = digitalRead(PIN_FLAME) == LOW;
-    withState([&](DeviceState &s) { s.flame = flame; });
+    uint32_t now = millis();
+    withState([&](DeviceState &s) {
+      s.flame = flame;
+      if (flame) s.lastFlameMs = now;
+    });
     esp_task_wdt_reset();
     vTaskDelayUntil(&last, pdMS_TO_TICKS(FLAME_PERIOD_MS));
   }

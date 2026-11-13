@@ -4,6 +4,11 @@
 
 static Preferences prefs;
 static SemaphoreHandle_t seqMutex = xSemaphoreCreateMutex();
+static SemaphoreHandle_t nvsMutex = xSemaphoreCreateRecursiveMutex();  // several tasks write settings
+struct NvsLock {
+  NvsLock() { xSemaphoreTakeRecursive(nvsMutex, portMAX_DELAY); }
+  ~NvsLock() { xSemaphoreGiveRecursive(nvsMutex); }
+};
 static uint32_t seqNext = 0, seqLeaseEnd = 0;
 static char apPass[9] = "";
 static const uint32_t SEQ_LEASE = 100;
@@ -27,6 +32,7 @@ void settingsBegin() {
 }
 
 NetConfig loadNetConfig() {
+  NvsLock lock;
   NetConfig c;
   c.ssid = prefs.getString("ssid", "");
   c.pass = prefs.getString("pass", "");
@@ -37,6 +43,7 @@ NetConfig loadNetConfig() {
 }
 
 void saveNetConfig(const NetConfig &c) {
+  NvsLock lock;
   prefs.putString("ssid", c.ssid);
   prefs.putString("pass", c.pass);
   prefs.putString("room", c.room);
@@ -45,6 +52,7 @@ void saveNetConfig(const NetConfig &c) {
 }
 
 void clearWifiDetails() {
+  NvsLock lock;
   prefs.remove("ssid");
   prefs.remove("pass");
   prefs.putBool("verified", false);
@@ -54,6 +62,7 @@ const char *apPassword() { return apPass; }
 
 uint32_t nextSeq() {
   xSemaphoreTake(seqMutex, portMAX_DELAY);
+  NvsLock lock;
   uint32_t s = seqNext++;
   if (seqNext >= seqLeaseEnd) {
     seqLeaseEnd = seqNext + SEQ_LEASE;
@@ -63,15 +72,25 @@ uint32_t nextSeq() {
   return s;
 }
 
-bool loadFireLatched() { return prefs.getBool("fire", false); }
-bool loadSilenced() { return prefs.getBool("silenced", false); }
+bool loadFireLatched() {
+  NvsLock lock;
+  return prefs.getBool("fire", false);
+}
+bool loadSilenced() {
+  NvsLock lock;
+  return prefs.getBool("silenced", false);
+}
 
 void saveFireState(bool latched, bool silenced) {
+  NvsLock lock;
   prefs.putBool("fire", latched);
   prefs.putBool("silenced", silenced);
 }
 
-String loadTeacherTags() { return prefs.getString("teachers", ""); }
+String loadTeacherTags() {
+  NvsLock lock;
+  return prefs.getString("teachers", "");
+}
 
 bool isTeacherTag(const char *uid) {
   String key = String(uid) + ",";
@@ -79,6 +98,7 @@ bool isTeacherTag(const char *uid) {
 }
 
 void addTeacherTag(const char *uid) {
+  NvsLock lock;
   if (isTeacherTag(uid)) return;
   prefs.putString("teachers", loadTeacherTags() + uid + ",");
 }
