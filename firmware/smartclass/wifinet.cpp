@@ -20,6 +20,9 @@ static bool apOn = false;
 static uint32_t tryStart = 0, nextTry = 0, gap = 1000, apOffAt = 0, lastScan = 0;
 static int attempts = 0;
 static bool timeAnnounced = false;
+static volatile bool stackReady = false;
+
+bool wifiStackReady() { return stackReady; }
 
 static const char *reasonText(uint8_t r) {
   switch (r) {
@@ -187,8 +190,10 @@ static void wifiTask(void *) {
     mode = SETUP;
     setNetState(true, false);
     startAP();
+    stackReady = true;
   } else {
     WiFi.mode(WIFI_STA);
+    stackReady = true;  // the TCP/IP stack exists only after WiFi.mode(): the web server waits for this
     limitTxPower();
     beginConnect(cfg);
     tryStart = millis();

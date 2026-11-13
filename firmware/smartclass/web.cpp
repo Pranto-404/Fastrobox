@@ -130,6 +130,9 @@ static void handleSave() {
 
 static void webTask(void *) {
   installPages();          // may format the file system once: done before joining the watchdog
+  // Opening a socket before the Wi-Fi task has started the TCP/IP stack crashes the board
+  // ("tcpip_send_msg_wait_sem ... Invalid mbox"), so wait for it.
+  while (!wifiStackReady()) vTaskDelay(pdMS_TO_TICKS(20));
   esp_task_wdt_add(NULL);
   server.on("/", HTTP_GET, [] { sendFile(fromSetupNetwork() && stateSnapshot().setupMode ? "/setup.html" : "/index.html"); });
   server.on("/setup", HTTP_GET, [] { sendFile("/setup.html"); });

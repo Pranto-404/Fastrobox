@@ -5,6 +5,7 @@
 #include "settings.h"
 
 void startWifiTask();
+bool wifiStackReady();                    // true once WiFi.mode() has started the network stack
 void wifiFactoryReset();                 // clear Wi-Fi details and restart in setup mode
 void wifiSubmitSetup(const NetConfig &c); // called by the setup page
 String wifiScanJson();                   // networks seen by the last scan
