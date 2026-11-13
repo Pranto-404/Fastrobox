@@ -111,6 +111,8 @@ static void handleSave() {
     return;
   }
   c.room = okRoom;
+  String label = String(deviceId()) + "=";
+  if (token.startsWith(label)) token = token.substring(label.length());  // pasted with its "T07-D1=" label
   if (token.length()) c.token = token;  // empty = keep the saved token
   if (c.token.isEmpty()) {
     server.send(400, "application/json", "{\"ok\":false,\"error\":\"Device token is required\"}");

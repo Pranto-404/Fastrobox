@@ -71,6 +71,7 @@ class Event(BaseModel):
 def check_device(device_id: str, authorization: Optional[str]) -> None:
     expected = DEVICE_TOKENS.get(device_id)
     given = (authorization or "").removeprefix("Bearer ").strip()
+    given = given.removeprefix(device_id + "=")  # accept a token pasted together with its "T07-D1=" label
     if not expected or not given or not hmac.compare_digest(expected, given):
         raise HTTPException(status_code=401, detail="invalid device token")
 
