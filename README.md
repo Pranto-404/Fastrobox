@@ -4,10 +4,38 @@ Official version-controlled workspace for the Fastrobox hackathon project.
 
 ## Repository status
 
-- **Project:** Fastrobox
-- **Competition:** FastRobox 1.0 Grand Finale
+- **Project:** Fastrobox — AI-Powered Smart Classroom (FastRobox 1.0 Grand Finale, Team T07)
 - **Default branch:** `main`
-- **Current stage:** ESP32-S3 USB serial bring-up sketch committed. Board and peripherals have **not yet** been physically verified.
+- **Firmware:** USB bring-up and Level 1 sketches committed; **not yet verified on the physical board.**
+- **Web platform (`web/`):** backend, device API, roles, live dashboards, Bangla, admin, attendance
+  and security logic implemented and tested without hardware (43 automated tests + 17 browser checks).
+  **Not deployed yet; no level has been judged.** Status per level: [`docs/LEVEL_MAPPING.md`](docs/LEVEL_MAPPING.md).
+
+## Layout
+
+| Path | Contents |
+|---|---|
+| `firmware/` | ESP32-S3-CAM Arduino sketches |
+| `web/` | Next.js platform: dashboards + REST API for the device |
+| `supabase/migrations/` | Postgres schema (Supabase) |
+| `docs/` | [API contract for the firmware](docs/API_CONTRACT.md), [architecture](docs/ARCHITECTURE.md), [deployment](docs/DEPLOYMENT.md), [testing](docs/TESTING.md), [level mapping](docs/LEVEL_MAPPING.md), [evidence templates](docs/evidence/) |
+
+## Run the platform locally
+
+Requirements: Node.js 20+ and PostgreSQL 16 (local, Docker or Supabase).
+
+```bash
+cd web
+npm ci
+cp .env.example .env.local        # set DATABASE_URL; APP_MODE=demo for the simulator
+npm run db:migrate
+APP_MODE=demo npm run seed -- --demo   # demo accounts + simulated device (passwords printed once)
+npm run dev                            # http://localhost:3000
+SIM_DEVICE_TOKEN=<token printed by seed> npm run simulate -- --url http://localhost:3000 --scenario heat
+npm test                               # needs TEST_DATABASE_URL (database is recreated)
+```
+
+Production deployment (Vercel + Supabase): see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ## Immediate hardware test
 
