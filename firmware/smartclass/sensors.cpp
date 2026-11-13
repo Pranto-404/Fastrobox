@@ -4,6 +4,7 @@
 #include <MFRC522.h>
 #include <DHTesp.h>
 #include "esp_task_wdt.h"
+#include "outbox.h"
 
 static DHTesp dht;
 static MFRC522 rfid(PIN_RFID_SS, PIN_RFID_RST);
@@ -37,6 +38,7 @@ static void dhtTask(void *) {
     } else if (++fails == DHT_FAILS_FOR_ERROR) {
       withState([](DeviceState &s) { s.dhtError = true; });
       logf("[ERROR] SENSOR ERROR: DHT11");
+      emitEvent("SENSOR_ERROR", "DHT11");
     }
     esp_task_wdt_reset();
     vTaskDelayUntil(&last, pdMS_TO_TICKS(DHT_PERIOD_MS));
@@ -72,6 +74,7 @@ static void rfidTask(void *) {
       if (++badVersion == RFID_FAILS_FOR_ERROR) {
         withState([](DeviceState &s) { s.rfidError = true; });
         logf("[ERROR] SENSOR ERROR: RFID");
+        emitEvent("SENSOR_ERROR", "RFID");
       }
     } else {
       if (isError) {
@@ -92,6 +95,7 @@ static void rfidTask(void *) {
           for (byte i = 0; i < rfid.uid.size && i < 10; i++) sprintf(uid + i * 2, "%02X", rfid.uid.uidByte[i]);
           withState([&](DeviceState &s) { strlcpy(s.lastUid, uid, sizeof(s.lastUid)); });
           logf("[CARD] uid=%s", uid);
+          emitEvent("CARD_TAP", uid);  // sent to the cloud at once
         }
         absentPolls = 0;
         rfid.PICC_HaltA();

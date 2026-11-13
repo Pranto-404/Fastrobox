@@ -1,9 +1,12 @@
 // FastRobox SmartClass firmware (ESP32-S3-N16R8 + OV3660).
 // Level 1: dual-core FreeRTOS tasks, [STATUS] every second, serial commands, task watchdog, sensor errors.
+// Level 2: Wi-Fi setup access point + page, local status page (LittleFS, mDNS), reconnect, NTP time,
+//          HTTPS telemetry every 5 s with server-certificate check, CARD_TAP / BOOT events, seq never reused.
 //
 // Tasks (see `tasks` command):
 //   core 1: main (this loop: console + [STATUS] 1 s), dht (5 s), flame (100 ms), indicator (LED/buzzer 10 ms)
-//   core 0: rfid (200 ms), sys (chip temperature 1 s)        [Wi-Fi/network tasks join core 0 in Level 2]
+//   core 1: telem (queues telemetry every 5 s)
+//   core 0: rfid (200 ms), sys (chip temperature 1 s), wifi (50 ms), web (local pages), uplink (HTTPS to the cloud)
 //
 // Arduino IDE: board "ESP32S3 Dev Module", esp32 core 2.0.17, Flash 16MB, PSRAM "OPI PSRAM",
 // USB CDC On Boot "Disabled" (COM port). Libraries: MFRC522 (GithubCommunity), DHT sensor library for ESPx.
@@ -13,6 +16,12 @@
 #include "sensors.h"
 #include "indicator.h"
 #include "console.h"
+#include "settings.h"
+#include "outbox.h"
+#include "telemetry.h"
+#include "wifinet.h"
+#include "web.h"
+#include "uplink.h"
 #include "esp_task_wdt.h"
 #include "esp_arduino_version.h"
 
@@ -32,7 +41,11 @@ void setup() {
   esp_task_wdt_init(WDT_TIMEOUT_S, true);
 #endif
 
-  logf("[EVENT] BOOT reason=%s", resetReasonName());
+  settingsBegin();
+  outboxBegin();
+  char reason[32];
+  snprintf(reason, sizeof(reason), "reason=%s", resetReasonName());
+  emitEvent("BOOT", reason);  // prints "[EVENT] BOOT reason=..." and sends it to the cloud
   logf("[STATUS] SmartClass fw=%s team=%s", FW_VERSION, TEAM_ID);
   if (!psramFound()) logf("[ERROR] PSRAM not found: set Tools > PSRAM > \"OPI PSRAM\" and upload again");
   withState([](DeviceState &s) { s.chipTempC = temperatureRead(); });  // first [STATUS] line shows a real value
@@ -47,6 +60,10 @@ void setup() {
 
   startIndicatorTask();
   startSensorTasks();
+  startTelemetryTask();
+  startWifiTask();
+  startWebTask();
+  startUplinkTask();
 
   registerTask(xTaskGetCurrentTaskHandle(), "main", xPortGetCoreID(), STATUS_PERIOD_MS);
   enableLoopWDT();  // the main task (this loop) is watched too: `hang` freezes it on purpose

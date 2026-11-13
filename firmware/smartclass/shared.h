@@ -18,7 +18,20 @@ struct DeviceState {
   bool doorUnlocked = false;
   // System snapshot (sysTask)
   float chipTempC = 0;
+  // Network (Level 2)
+  char roomId[32] = "";
+  bool setupMode = false;      // own access point + setup page active
+  bool wifiConnected = false;
+  bool serverLive = false;     // last server reply within LIVE_TIMEOUT_MS
+  int rssi = 0;
+  char ip[16] = "";
+  uint16_t pending = 0;        // records waiting to be sent
 };
+
+// "T07-D1"
+const char *deviceId();
+// "smartclass-t07"
+const char *mdnsName();
 
 // Copy of the state, taken under the mutex.
 DeviceState stateSnapshot();

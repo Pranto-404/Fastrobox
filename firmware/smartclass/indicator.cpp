@@ -9,11 +9,14 @@ struct Rgb {
 // Colours from the Device Signals table (brightness kept low; the LED is very bright).
 static const Rgb GREEN = {0, 40, 0};
 static const Rgb MAGENTA = {40, 0, 40};
+static const Rgb BLUE = {0, 0, 50};
 
-// Level 1 states: Sensor error (6) beats Safe (11). Later levels add more states here.
+// Device Signals priority (lower number wins): 6 sensor error > 10 Wi-Fi setup / offline > 11 safe.
+// Later levels add their states here.
 static Rgb currentColour(const DeviceState &s) {
-  if (s.dhtError || s.rfidError) return MAGENTA;
-  return GREEN;
+  if (s.dhtError || s.rfidError) return MAGENTA;  // 6
+  if (s.setupMode || !s.serverLive) return BLUE;  // 10
+  return GREEN;                                   // 11
 }
 
 static void indicatorTask(void *) {

@@ -1,5 +1,6 @@
 #include "console.h"
 #include "shared.h"
+#include "wifinet.h"
 
 void printStatusLine() {
   DeviceState s = stateSnapshot();
@@ -8,21 +9,25 @@ void printStatusLine() {
     snprintf(t, sizeof(t), "%.1fC", s.tempC);
     snprintf(rh, sizeof(rh), "%.0f%%", s.rh);
   }
-  // Fields of levels not built yet print "-": HI and trend (Level 3), rssi (Level 2).
-  logf("[STATUS] up=%lus T=%s RH=%s HI=- flame=%d door=%s state=SAFE trend=- rssi=- heap=%luk psram=%luk "
+  char rssi[8] = "-";
+  if (s.wifiConnected) snprintf(rssi, sizeof(rssi), "%d", s.rssi);
+  // Fields of levels not built yet print "-": HI and trend (Level 3).
+  logf("[STATUS] up=%lus T=%s RH=%s HI=- flame=%d door=%s state=SAFE trend=- rssi=%s heap=%luk psram=%luk "
        "chip=%.1fC fw=%s",
-       (unsigned long)uptimeSeconds(), t, rh, s.flame ? 1 : 0, s.doorUnlocked ? "UNLOCKED" : "LOCKED",
+       (unsigned long)uptimeSeconds(), t, rh, s.flame ? 1 : 0, s.doorUnlocked ? "UNLOCKED" : "LOCKED", rssi,
        (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getFreePsram() / 1024), s.chipTempC,
        FW_VERSION);
 }
 
 static void printHealth() {
   DeviceState s = stateSnapshot();
-  logf("[CMD] health chip_temp=%.1fC heap_free=%luk psram_free=%luk flash=%luMB cpu=%luMHz rssi=- uptime=%lus "
+  char rssi[12] = "-";
+  if (s.wifiConnected) snprintf(rssi, sizeof(rssi), "%ddBm", s.rssi);
+  logf("[CMD] health chip_temp=%.1fC heap_free=%luk psram_free=%luk flash=%luMB cpu=%luMHz rssi=%s uptime=%lus "
        "reset=%s fw=%s",
        s.chipTempC, (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getFreePsram() / 1024),
        (unsigned long)(ESP.getFlashChipSize() / (1024 * 1024)), (unsigned long)ESP.getCpuFreqMHz(),
-       (unsigned long)uptimeSeconds(), resetReasonName(), FW_VERSION);
+       rssi, (unsigned long)uptimeSeconds(), resetReasonName(), FW_VERSION);
 }
 
 static void handleCommand(String cmd) {
@@ -55,7 +60,8 @@ static void handleCommand(String cmd) {
       // Deliberately never returns and never feeds the watchdog.
     }
   } else if (cmd == "reset") {
-    logf("[CMD] reset: Wi-Fi setup arrives in Level 2");
+    logf("[CMD] reset: clearing saved Wi-Fi details");
+    wifiFactoryReset();
   } else if (cmd == "csi") {
     logf("[CMD] csi: Wi-Fi CSI arrives in Level 11");
   } else {

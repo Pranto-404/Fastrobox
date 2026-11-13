@@ -62,3 +62,18 @@ const char *resetReasonName() {
 }
 
 uint32_t uptimeSeconds() { return (uint32_t)(esp_timer_get_time() / 1000000ULL); }
+
+const char *deviceId() {
+  static char id[16] = "";
+  if (!id[0]) snprintf(id, sizeof(id), "%s-%s", TEAM_ID, DEVICE_NUMBER);
+  return id;
+}
+
+const char *mdnsName() {
+  static char name[32] = "";
+  if (!name[0]) {
+    snprintf(name, sizeof(name), "smartclass-%s", TEAM_ID);
+    for (char *c = name; *c; c++) *c = tolower(*c);
+  }
+  return name;
+}

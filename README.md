@@ -25,11 +25,40 @@ docs/       plan, checklist, API contract, wiring, write-ups
 
 ## Build and run
 
-> This section is required from Level 2 on and must stay current. It will be filled in with exact commands as each part lands.
+### 1. Platform (cloud): `server/`
+FastAPI + PostgreSQL. Live at **https://fastrobox-t07.onrender.com** (Render, region Singapore). The records page is at `/records` and needs the admin login.
 
-- **Firmware (PlatformIO):** `cd firmware && pio run -e uart -t upload && pio device monitor`
-- **Firmware (Arduino IDE):** open `firmware/smartclass/smartclass.ino`. Use esp32 core 2.0.17 with board ESP32S3 Dev Module, Flash 16MB, PSRAM OPI and USB CDC On Boot Disabled. Install the MFRC522 and "DHT sensor library for ESPx" libraries.
-- **Platform:** `cd deploy && cp .env.example .env` (fill in values locally; never commit them), then `docker compose up -d`
+| Environment variable | What it is (set in the Render dashboard, **never** in the repo) |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string (Render: the database's *Internal Database URL*) |
+| `DEVICE_TOKENS` | `T07-D1=<token>`: the token typed on the device setup page |
+| `ADMIN_PASSWORD` | Password for `/records` (user `admin`, or `ADMIN_USER`) |
+
+Run it locally:
+```bash
+cd server && python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
+export DATABASE_URL=postgresql://user:pass@localhost/fastrobox DEVICE_TOKENS=T07-D1=dev-token ADMIN_PASSWORD=dev
+uvicorn app.main:app --reload
+```
+Deploy: push to the deployed branch (Render auto-deploys), or use the `render.yaml` blueprint.
+
+### 2. Firmware (ESP32-S3): `firmware/smartclass/`
+- **Arduino IDE 2:** open `firmware/smartclass/smartclass.ino`.
+  - Board package **esp32 2.0.17**, board **ESP32S3 Dev Module**, Flash Size **16MB**, PSRAM **OPI PSRAM**, USB CDC On Boot **Disabled** (use the USB-UART port).
+  - Libraries: **MFRC522** (GithubCommunity) and **DHT sensor library for ESPx** (beegee_tokyo).
+  - `partitions.csv` in the sketch folder is used automatically (two 4 MB OTA app slots + LittleFS).
+- **PlatformIO:** `cd firmware && pio run -e uart -t upload && pio device monitor`
+- Team ID and server address are in `firmware/smartclass/config.h` (not secrets).
+
+First start (no saved Wi-Fi):
+1. The board opens the access point `SmartClass-T07` and prints its 8-character password on the Serial Monitor (115200).
+2. Join it and open http://192.168.4.1. Pick the network, then enter its password, the Room ID and the device token.
+3. The local status page is then at the device IP and at http://smartclass-t07.local.
+4. Holding BOOT for 5 s, or typing `reset`, clears the saved Wi-Fi details.
+
+### 3. Tools
+- `tools/replay.py`: resends an old message to show that replays are rejected. Set `FASTROBOX_URL`, `ADMIN_PASSWORD` and `DEVICE_TOKEN` first.
+- `tools/writeup/build.py LNN`: builds a level write-up PDF.
 
 ## Rules we follow in this repo
 

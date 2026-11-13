@@ -36,5 +36,20 @@
 #define RFID_FAILS_FOR_ERROR 5      // 5 bad version reads (1 s) -> error (limit 3 s)
 #define CARD_ABSENT_POLLS    2      // card must be gone 2 polls (400 ms) before a new tap counts
 
+// ---- Network (Level 2). The server address is not a secret; the device token is typed on the setup page. ----
+#ifndef SERVER_HOST
+#define SERVER_HOST          "fastrobox-t07.onrender.com"
+#endif
+#define SERVER_PORT          443
+#define DEVICE_NUMBER        "D1"     // device_id = TEAM_ID-D1, e.g. T07-D1
+#define TZ_DHAKA             "<+06>-6" // Asia/Dhaka, UTC+6, no daylight saving
+#define TELEMETRY_PERIOD_MS  5000   // telemetry every 5 s (+/- 1 s allowed)
+#define SETUP_TRY_MS         12000  // new Wi-Fi details: give up after 12 s -> back to setup (limit 15 s)
+#define RECONNECT_MAX_GAP_MS 8000   // saved Wi-Fi: retry gaps 1, 2, 4, 8, 8 ... s (reconnects well within 30 s)
+#define BOOT_HOLD_MS         5000   // hold BOOT 5 s -> clear Wi-Fi details
+#define LIVE_TIMEOUT_MS      15000  // no successful server reply for 15 s -> OFFLINE
+#define OUTBOX_CAPACITY      360    // records kept in RAM while the server is unreachable (30 min of telemetry)
+#define WEB_VERSION          "2"    // bump when the pages in webfiles.h change
+
 // ---- Watchdog ----
 #define WDT_TIMEOUT_S        8      // a frozen task restarts the board in ~8 s (limit 10 s)
