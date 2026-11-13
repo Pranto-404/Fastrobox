@@ -9,7 +9,7 @@
 
 1. **Most of the work happens before the event.** The rules say *"Code may be written and the platform deployed before the event."* We arrive with all 12 levels built, deployed and rehearsed. On the day, the 7 hours are only for wiring the kit, live judging and recording evidence. We do not write new features on site.
 2. **Being reliable beats having more features.** A level fails if both attempts fail, and then **every later level is closed**. A pass on the 1st attempt earns 100% of the marks and a pass on the 2nd earns 70%. We do not go to a live call with a level that has not passed a full rehearsal **3 times in a row**.
-3. **Batch the levels into judging calls.** There are only 4 calls, so each call carries 2 to 4 levels (see §8). One physical action can count for several levels. For example, one flame test can prove L3 (FIRE) and L4 (banner and phone alert) together.
+3. **The judges follow a fixed script in 3 rounds.** Round A covers L1–3 (about 10 min), Round B covers L4–8 (about 15 min) and Round C covers L9–12 (about 12 min). That is 3 calls, plus 1 spare for a retry (see §1A and §8). We rehearse the judges' exact rows A1–C8 (see [`JUDGING_SCRIPT.md`](JUDGING_SCRIPT.md)). One physical action can count for several levels.
 4. **Every result must appear in its fixed place.** Each level lists where each result must show: Serial Monitor, local page, dashboard, light and buzzer, database, phone and BLE. Results from earlier levels must **keep showing** in later levels. Our rehearsals check every one of these places.
 5. **Judges choose the test values on the spot.** Wi-Fi, Room ID, class times, limits and the team ID all come from setup or the dashboard. Nothing is hard-coded.
 6. **No secrets in the code or the repo.** Device tokens are typed into the setup page. Server keys live in `.env` on the VPS. `gitleaks` runs on every commit and in CI.
@@ -41,6 +41,37 @@
 - L1 to L3 (130 marks) protect the whole run. They must be boring and bulletproof.
 - L12 (50 marks, medium difficulty) sits behind L9, L10 and L11, the three hardest levels. Most of L12's machinery (the outbox, flash buffer and exactly-once delivery) is built **in L2**, so L12 costs little extra. L10 and L11 must be robust enough that they **never block L12**.
 - Realistic target: L1 to L9 first try is 380 marks. L10 to L12 first try adds 130 more, for 500.
+
+---
+
+## 1A. What the judges will actually do (from the Judges' Checklist)
+
+Each round, the judge does only the rows tagged for the levels we name, in order. A level passes when **all its rows are ticked in the same attempt**. In every call, the judge also asks for **1–2 "Video must show" items live** (spot check). If one fails, that level's attempt fails. The step-by-step script with our prep for each row is in [`JUDGING_SCRIPT.md`](JUDGING_SCRIPT.md).
+
+| Round | Levels | Judge brings | What it means for us |
+|---|---|---|---|
+| **A** (~10 min) | 1–3 | 2.4 GHz phone hotspot, candle + lighter, extinguisher, stopwatch | **The judge does the Wi-Fi setup** on their own hotspot (A3), using the Room ID they choose and **our device token**, so we hand over the token on paper. They then check the IP **and the mDNS address from our laptop**. A1: 3 taps + 1 held card = **exactly 4 `[CARD]` lines**. A2: `hang` → WATCHDOG and door LOCKED. A4: we show **live DB rows for 20 s** + a replay attempt. A5: Teacher tag while the flame is present does nothing; after it, the student card does nothing and the Teacher tag silences. A6: **unplugged 40 s** → offline/online + BOOT, door still UNLOCKED, then **Reset fire** → LOCKED + Safe. A7: panic 3 s. |
+| **B** (~15 min) | 4–8 | Phone camera, two browsers, stopwatch | Judges log in themselves, so logins and URLs go on a printed sheet. B2: **S2 opens S1's attendance URL → 401/403 + no data**. B3: the judge picks a Warning limit between 25 and 35 °C. B4: the **good** OTA file only (damaged and faulty files are spot-check candidates). B5: a TEST Danger notice → banner + purple device, and **removing it clears both**. B6: today's report must include **Round A's fire and panic**. B7–B9: the L7/L8 scenario run **by the judge as Admin** (set class start, re-register the card). The judge shows **a photo of A on their phone for 10 s**. |
+| **C** (~12 min) | 9–12 | Two chairs, masking tape, phone, stopwatch, trial-order paper | The device must be **LIVE on our own hotspot**. Chairs go in **seat zones 1 and 2** of the ROOM view, so mark the zones on the floor. C1: capacity 1, counts 0 → 1 (zone 2) → 2 (zone 2 only, the second person standing outside the zones). C3 hand-raise negatives are **"touch head" and "stretch arms sideways"**. C4: lens taped → COVERED + **EMPTY with everyone ≥ 2 m away**. C5: **a judge** walks the 4 zones in random order, 10 s each. C7: our hotspot is turned off for 90 s; after 40 s the judge joins our AP and opens 192.168.4.1; we show a BLE scanner; A taps (let in) and the Teacher tag does not unlock. C8: SYNCING → LIVE, records once each, **A Present at the tap time, flagged face-not-verified**. |
+
+**Things the script forces us to do:**
+1. **The judge chooses the Room ID in A3, and it becomes "the room".**
+   - The platform **auto-creates a Room** when it sees a new `room_id`.
+   - Between Round A and Round B, the Admin assigns that room to the Teacher and builds the L7 classes in it.
+   - When we put the device back on our own network after Round A, the setup page **pre-fills the current Room ID and token**, so the room never changes by accident.
+2. **`reset` clears only the Wi-Fi details.** The Teacher tag list, fire latch and settings stay.
+3. **The Teacher tag must be registered before Round A.**
+4. **Map the judge accounts onto the L7 people so one Guardian works for both checks:** **S1 = B, S2 = A**, and the Guardian is linked to S1(B) and D. This satisfies "Guardian linked to S1" (paper) and "Guardian linked to B and D" (checklist). Confirm with the judges.
+5. **The L7 set-up before Round B:**
+   - A and B are in the class in this room.
+   - C is in another class.
+   - D is enrolled here but absent.
+   - The card is registered to A.
+
+   The "Register card → tap" flow must be simple enough for **a judge** to use.
+6. **Board placement and CSI:** the board stays at the ROOM aim for the whole of Round C (no re-aim needed in C1). Collect CSI **after Round B, in that final position, on the same hotspot, without restarting the hotspot** (its channel may change). Record the L9 "turned 45°" video **before** CSI collection.
+7. **When a class time changes, push the offline allowlist to the device at once** (C7 sets the class start to "now" just before the hotspot goes off).
+8. **Have every video item ready on the table**, because spot checks can ask for any of them: hair dryer + power strip, the three firmware files, a BLE scanner app, the Bangla switch, a weather-outage switch, and a second Teacher browser for the Ack race.
 
 ---
 
@@ -176,6 +207,8 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
 - **`seq` never reused:** keep a lease in NVS. At boot, start from the stored `seq_block_end` and write `+100` ahead before using the block. Gaps are allowed; going backwards is not.
 - **Time:** NTP (`pool.ntp.org`, TZ `<+06>-6`). If time is unknown, a record stores `(boot_id, uptime_ms)` and is rebased (`ts = sync_epoch − (sync_uptime − record_uptime)`) when time arrives. The local page can also send the browser's time to the device.
 - **Replay demo:** `tools/replay.py` resends a captured message → `409` → the DB count is unchanged. It reads the token from an env var.
+- **"Newest records" view (A4):** an Admin page that refreshes itself every 1 s and shows the last 20 telemetry rows (all fields), the last events and the total row count. The judge watches this for 20 s, then watches the count stay the same after the replay.
+- **mDNS from the laptop (A3):** macOS resolves `.local` names natively. Windows may need Bonjour. Test our laptop on an Android **and** an iPhone hotspot (some hotspots isolate clients).
 - **README must explain build + run** from this level on.
 
 ### L3: Heat, fire, panic, fail-safe door (50)
@@ -205,6 +238,8 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
 - **Phone alerts:** FIRE, PANIC and DANGER trigger a Telegram message to the Teacher within 10 s. Log each sent alert in the DB with its time.
 - **EN/BN:** i18next JSON for **every** menu, label, button and state name, with the Noto Sans Bengali font. A CI check fails the build if any key is missing in `bn.json`.
 - `tools/seed_judges.py` creates Admin, Teacher, S1, S2 and Guardian (linked to S1), using passwords typed in at the prompt (never stored in the repo).
+- **Per-student attendance URL** (`/students/<id>/attendance`). B2 has S2 open S1's URL directly. The API answers **403 with an empty body**, and the page shows "Not allowed".
+- **Room auto-registration:** an unknown `room_id` in telemetry creates a Room. Admin assigns its Teacher with one click (needed after A3).
 
 ### L5: Remote settings, OTA, rollback (30)
 - **Settings page (Admin only):** Warning and Danger limits. Validation: values must be in 0–50 and Warning must be below Danger. "Warning 45" with Danger 40 is refused with a clear message. Keep a change log (who, when, old → new). The device gets the settings via a command (≤ 1 s poll), applies them, saves them to NVS and sends `SETTINGS_APPLIED warn=.. danger=..`. The local page shows the limits.
@@ -222,6 +257,11 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
   2. `fw-1.0.1-damaged.bin` (truncated with `head -c`)
   3. `fw-1.0.2-badserver.bin` (built with `SERVER_HOST=wrong.example.invalid`)
 - Keep the firmware small enough that OTA plus reboot takes well under 3 minutes.
+- **Do not reject an image only because its version is not newer.** A spot check may come *after* B4 has installed 1.0.1, so integrity checks alone decide. Bring spare files: `1.0.1-good`, `1.0.1-damaged`, `1.0.2-badserver` and `1.0.3-good` (for a repeat).
+- B3 Warning values between 25 and 35 °C may push the room straight into Warning (yellow). That is expected. After Round B, set Warning back to 32 °C.
+
+### L6 addition
+- **Removing a notice must clear it everywhere:** send a `server_event WEATHER_CLEARED` command so the device leaves purple and the local page drops `WEATHER ALERT` (B5).
 
 ### L6: Weather, history, AI assistant (40)
 - **Weather:** a scheduler fetches every 15 min and caches the result in the DB with its fetch time. The dashboard reads only from the cache. On failure it shows the last data, its age and `Data stale`. Admin has a "simulate weather outage" switch for the video.
@@ -270,13 +310,19 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
   - MOVED: ORB feature match against the reference of the selected position, with low homography inlier ratio < T3. **Mask out person boxes** and require 3 consecutive bad frames at 1 Hz, so walkers never cause a fault.
   - Fault → `CAMERA_FAULT` event + snapshot alert within 10 s + server_event to the device (cyan, local `CAMERA FAULT: <state>`, check-ins denied). Recovery → `CAMERA_OK` within 6 s.
 - Tune T1, T2 and T3 on recordings from 3 different rooms and lighting conditions, and document them.
+- **C1 exact sequence:** empty → `0 / none`; one person sitting in zone 2 → `1 / zone 2`; a second person standing in view outside the zones → `2 / zone 2 only` + `OVER CAPACITY` (capacity 1), which clears when they leave.
+  - Draw the zones tight around the chairs.
+  - Mark zones 1 and 2 on the floor with tape so the judges put their chairs there.
+  - Empty chairs must never count as people (person class only, confidence ≥ 0.5).
+- **C2:** at least 20 updates in 10 s, with the box following a person walking. Stream at 4 fps so we have a margin.
 
 ### L10: Own-trained hand-raise detector (40)
 - **Data tool:** at ROOM, a dashboard "Collect" mode saves seat-zone crops labelled `raised` or `not` (these are training images, so storing them is fine). Goal: ≥ 150 per class in prep, plus a **20–40 per class top-up at the venue** for its lighting.
 - **Features:** YOLO-pose keypoints of the person in the zone, made scale-invariant: wrist y relative to shoulder and nose, elbow angle, arm length. Fallback: MobileNet embeddings of the crop.
 - **Classifier (ours):** LogisticRegression or GradientBoosting from `server/ml/handraise/train.py`. Use a fixed **≥ 20% held-out set, split by recording session** (not random frames).
 - **Model page:** image counts, held-out accuracy, confusion matrix, average ms per prediction.
-- **Runtime:** positive for ≥ 2 s (consecutive frames) → `HAND RAISED – Seat n` once. Re-arm only after the hand goes down. The page shows today's count per seat. Test the "other movements" too: stretching, scratching the head, waving low.
+- **Runtime:** positive for ≥ 2 s (consecutive frames) → `HAND RAISED – Seat n` once. Re-arm only after the hand goes down. The page shows today's count per seat.
+- ⚠️ **The judges' negatives are "touch head" and "stretch arms sideways".** With "touch head" the wrist is *above the shoulder*, so a simple "wrist above shoulder" rule fails. The "not raised" class must contain **many examples of exactly these two poses**, plus sitting still, phone use, and leaning. Useful features: elbow above shoulder, a nearly straight arm, wrist above the **top of the head**, and the wrist-to-nose distance. The judge picks a random order of 4 trials, with **3 s raises**, in seat 1 or 2.
 
 ### L11: Wi-Fi CSI presence + 2×2 localization (40)
 - **Capture:** `esp_wifi_set_csi_config/rx_cb` on the STA link to **our own pocket router**, fixed on 2.4 GHz HT20 on a fixed channel. Ping the gateway at 50 Hz to get ≥ 20 CSI packets/s (aim for 40+). `csi` command → packets/s, subcarriers, channel.
@@ -291,6 +337,16 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
   5. Train (a few seconds).
   6. Check the confusion matrix.
 - ⚠️ The board **must not move** between data collection and the L11 test. See the call plan (§8).
+- **What the judges test (C4/C5):**
+  - Everyone stands ≥ 2 m away outside the grid and keeps still → EMPTY within 5 s, **staying EMPTY for 10 s**.
+  - **A judge** (not one of us) walks into the zones in random order, 10 s each. The zone shown at the end of the 10 s counts. OCCUPIED within 5 s; map within 3 s.
+  - The judge walks out ≥ 3 m → EMPTY within 5 s.
+- **What that means for training:**
+  - Record EMPTY with people **standing and moving 2–3 m outside the grid** (the judges and our team will be there).
+  - Record each zone with **at least 2 different team members**, standing *still* as well as shifting. A still person must stay OCCUPIED.
+  - Presence must therefore use the deviation from the empty baseline, not only motion variance.
+  - Keep the 3 s hold and a short vote window, so decisions land at about 4 s (limit 5 s).
+- **AP:** use the same hotspot that Round C and C7 use (Round C requires our own hotspot). Place it on a stand and tape it down. Do not toggle it between CSI collection and C5.
 - **Practise in at least 3 different rooms** before the event. Accuracy in one room means nothing.
 
 ### L12: Offline, BLE, power-cut recovery (50)
@@ -300,6 +356,17 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
 - **BLE:** NimBLE advertises `SC-<TeamID>-<STATE>` while offline. Restart the advert on each state change. `[BLE] advertising …`.
 - **Buffer:** the L2 outbox. 30 min of telemetry is about 360 records × ~300 B, roughly 110 KB, which is easy. Records are sent oldest first, once each (the server's `409` counts as delivered). On boot, any tail record with a bad CRC or length is **truncated** (half-written record discarded).
 - **Original time across a power cut:** records keep the real `ts` if time was known. Otherwise they keep `(boot_id, uptime)` and are rebased when NTP or browser time arrives.
+- **AP + STA on one channel:** while the AP fallback is up, phone clients must not keep dropping off. Reconnect the STA with the saved **BSSID + channel** (no full scans), at most once every 10 s.
+- **C7 sequence to rehearse:**
+  1. Admin sets class start = now (the allowlist is pushed at once).
+  2. Hotspot off.
+  3. At about 30 s, `[NET] AP ON`.
+  4. At 40 s, the judge's phone joins and opens 192.168.4.1, where the waiting count is rising.
+  5. The BLE scanner shows `SC-<TeamID>-OFFLINE`.
+  6. A taps → green + `OFFLINE_ENTRY`.
+  7. The Teacher tag → denied (the tag only silences fire; it never opens the door offline).
+  8. Hotspot on at 90 s → `SYNCING n=…` → `LIVE` within 60 s.
+  9. A is Present at the tap time, flagged face-not-verified.
 - **Restore on boot:** door, fire latch, settings, Room ID and Teacher tags all come from NVS. The device sends `BOOT` + state within seconds, so light, local page, door and dashboard agree within 20 s.
 
 ---
@@ -316,7 +383,7 @@ We don't yet know how many days are left. The plan below is in **phases** (about
 | **3. Access** | 8–13 | L7, L8 | Unlock < 4 s measured over 20 taps; spoof false accepts = 0 over 30 tries with 3 phones |
 | **4. Vision** | 11–16 | L9, L10 (start collecting hand-raise data on day 11) | COVERED/MOVED/OK < 5 s; held-out hand-raise accuracy ≥ 95% |
 | **5. Radio + resilience** | 13–18 | L11 (practise in 3 rooms), L12 | ≥ 3/4 zones in each room; 30-min offline soak, exactly-once verified by SQL |
-| **6. Dress rehearsals** | 18–21 | **Three full 7-hour mock events:** rewire from scratch, a "judge" teammate picks random test values, record real evidence, time everything. 12-hour soak test of the firmware (memory leaks, heap). Freeze the code 24 h before the event. | Every level passes first try in the last 2 rehearsals |
+| **6. Dress rehearsals** | 18–21 | **Three full 7-hour mock events** that follow `JUDGING_SCRIPT.md` row by row, with spot checks: rewire from scratch, a "judge" teammate picks random test values, record real evidence, time everything. 12-hour soak test of the firmware (memory leaks, heap). Freeze the code 24 h before the event. | Every level passes first try in the last 2 rehearsals |
 
 ### Roles (4 people; merge roles if 3)
 
@@ -342,30 +409,31 @@ We don't yet know how many days are left. The plan below is in **phases** (about
 
 | Time | Who | What |
 |---|---|---|
-| 0:00–0:20 | A+B | Unpack and check the kit. Wire from the laminated pin map. Flash the release build + LittleFS image (`tools/flash_all.sh`). Run `selftest`. |
-| 0:00–0:20 | C+D | Check the VPS is up, check the router, check the judges' accounts exist, open the laptop windows in their fixed layout (Serial Monitor · local page · dashboard · big on-screen clock) |
-| 0:20–0:35 | all | Device on our router, everything green. **Record L1–L4 video items** (this doubles as a final check). |
-| ~0:40 | all | **Call 1: L1 → L4** |
-| 0:40–1:40 | D | Fill in L1–L4 write-ups (screenshots + measured values). Tag `level-01`…`04`. Upload. |
-| 1:00–1:40 | A+B+C | Record L5–L8 video items (OTA files ready, enrolments done with the device camera). B starts the **hand-raise top-up collection** at ROOM. |
-| ~1:45 | all | **Call 2: L5 → L8** |
-| 2:00–3:00 | C | Retrain hand-raise with the venue data and check the held-out score. Record L9–L10 video items. |
-| ~3:00 | all | **Call 3: L9 → L10** |
-| 3:20–3:50 | B+C | Put the board and router in their **final L11 positions** (tape), cover the lens, run the CSI collection protocol, train, check the confusion matrix. Record L11 and L12 video items **without moving the board**. |
-| ~4:00 | all | **Call 4: L11 → L12** |
-| 4:00–end | D (+all) | Finish all write-ups, push tags, upload `T##_L##_video.mp4` + `T##_L##_writeup.pdf`. Upload deadline: ≤ 30 min after judging closes. Buffer for a 2nd attempt if needed. |
+| 0:00–0:20 | A+B | Unpack and check the kit. Wire from the laminated pin map. Flash the release build + LittleFS image (`tools/flash_all.sh`). Run `selftest`. **Register the Teacher tag.** |
+| 0:00–0:20 | C+D | Check the VPS is up, check our hotspot, check the judges' accounts exist. Print the **judge sheet**: logins, page URLs, the device token, the AP name. Open the laptop windows in their fixed layout (Serial Monitor · local page · dashboard · "newest records" page · big on-screen clock). |
+| 0:20–0:40 | all | **Record the L1–L3 video items** (sensor unplug, hair dryer, candle flick, short touch, gentle warming, DHT unplugged in Warning). This doubles as a final check. Put the hair dryer, power strip and extinguisher on the table. |
+| ~0:40 | all | **Call 1 = Round A (L1–L3)**, about 10 min |
+| after A | A+C | Put the device back on our hotspot with the **same Room ID** the judge chose. Admin: assign the room to the Teacher; set up the L7 scenario in that room (A and B in this class, C in another class, D enrolled but absent, card → A, Guardian → B and D). Re-aim the camera to **DOOR**. Check the 3 firmware files are on the laptop. |
+| after A | D | Fill in the L1–L3 write-ups (screenshots + measured values). `git tag level-01..03` + push. Upload. |
+| ~1:00–1:40 | all | **Record the L4–L8 video items** (four roles, Bangla, lockout, settings + OTA damaged/faulty, weather outage, chart/history/CSV, assistant "no data", L7/L8 scenarios, Ack race, delete C) |
+| ~1:45 | all | **Call 2 = Round B (L4–L8)**, about 15 min. Afterwards: Warning limit back to 32 °C. |
+| 2:00–2:30 | B | Record the L9 videos that **move the board** (45° MOVED, covered at DOOR → CAMERA FAULT, tap at ROOM → CAMERA NOT AT DOOR), plus Night-mode INTRUDER. |
+| 2:30–2:45 | B | **Final placement:** aim at ROOM and tape the board. Tape seat zones 1 and 2 on the floor. Tape the hotspot phone or router in place. Draw the zones on the ROOM snapshot. **Nothing moves after this point.** |
+| 2:45–3:15 | B+C | Hand-raise top-up at the venue (include "touch head" and "stretch arms sideways" negatives) → retrain → Model page. CSI collection (EMPTY with people 2–3 m away + 4 zones × 2 people × 2 rounds) → train → confusion matrix. Record the L10 and L11 videos. |
+| ~3:20 | all | **Call 3 = Round C (L9–L12)**, about 12 min |
+| after C | A | Record the L12 videos (power cut during an outage; two power cuts with fire latched) |
+| ~4:00–end | D (+all) | Finish all write-ups, push tags, upload `T##_L##_video.mp4` + `T##_L##_writeup.pdf` (≤ 30 min after judging closes). **Call 4 is kept in reserve** for a 2nd attempt. |
 
-Judges serve many teams, so **request each call early** and do the next preparation while waiting in the queue.
+Judges serve many teams, so **request each call early** and prepare the next round while waiting in the queue.
 
 ---
 
 ## 8. Judging-call strategy
 
-- **Plan:** Call 1 = L1–L4, Call 2 = L5–L8, Call 3 = L9–L10, Call 4 = L11–L12.
-- **Why L11 gets its own call:** L9 needs the camera re-aimed (DOOR/ROOM and a 45° turn), but L11 needs the board **fixed** between CSI data collection and the test. So CSI collection must happen *after* L9/L10 are passed.
-- **If a level fails:** if the cause is obvious and fixable within about 2 minutes (a loose wire, a wrong setting), take the 2nd attempt **straight away** in the same call. Otherwise stop the call, fix it calmly, and start the next call with that level. The next call always begins at our next unpassed level.
-- **Use one action for several levels.** One flame test shows L3 FIRE + L4 banner + phone alert. One DANGER from the hair dryer shows L3 + L4 phone alert. Script these so the judge sees all of them at once.
-- **Judges may ask us to repeat any video item live.** Video items must be as reliable as the live checks.
+- **Plan:** Call 1 = Round A (L1–L3), Call 2 = Round B (L4–L8), Call 3 = Round C (L9–L12), **Call 4 = spare.**
+- **If a level fails:** if the cause is obvious and fixable within about 2 minutes (a loose wire, a wrong setting), take the 2nd attempt **straight away** in the same call. Otherwise stop, fix it calmly, and start the next call with that level. The spare call exists for exactly this.
+- **Spot checks:** expect 1–2 "Video must show" items to be repeated live in every call, and they decide that level's attempt. Every video item must be **as reliable as a live row** and quick to set up (props on the table).
+- **Speed (tiebreaker):** the judges' sheet records the time of the last level passed. Request Round C as early as the CSI and hand-raise prep allows.
 - **Timing:** a time no more than 0.5 s over a limit is re-measured, but we aim for **half of every limit**. Show the measured timings on screen (the dashboard shows the event time vs. the device time).
 
 ---
@@ -397,6 +465,12 @@ Judges serve many teams, so **request each call early** and do the next preparat
 | 11 | Long queue for a judging call | Request early; do the next level's video recording while waiting |
 | 12 | A member can't explain some code | Weekly walkthroughs; each module has an owner and a backup |
 | 13 | Only one RFID card in the kit | Fast card re-link flow on the dashboard; scripted A/B/C/D sequences |
+| 14 | The judge's Room ID (A3) does not match the rooms on the platform | Auto-create the room; setup page pre-fills the current Room ID; between-round checklist assigns the Teacher and classes |
+| 15 | mDNS address not reachable from our laptop on the judge's hotspot | Test on Android and iPhone hotspots with our laptop OS; Bonjour on Windows; use a Mac as the demo laptop if possible |
+| 16 | Phone clients drop from the fallback AP while the STA retries (C7) | Reconnect on a fixed BSSID + channel, no full scans, ≥ 10 s between attempts |
+| 17 | Our hotspot changes channel, so the CSI model goes stale | Don't toggle the hotspot between CSI collection and C5; fix the channel if it's a router |
+| 18 | Hand-raise false positives on "touch head" / "stretch arms" | These exact poses in the negative class; test 4-trial random orders in rehearsals |
+| 19 | Phone-photo spoof unlocks the door (B9) | Layered anti-spoof; 30+ attempts with 3+ phones in rehearsal, zero accepts allowed |
 
 ---
 
@@ -406,8 +480,10 @@ Judges serve many teams, so **request each call early** and do the next preparat
 2. Must videos be recorded on site (we assume yes), and may they be recorded before that level's live call?
 3. Does `FIRE_CLEARED` mean "flame gone" or "Reset fire pressed"? (We plan to send it on Reset fire, with the flame-gone time in the detail.)
 4. What is our Team ID and expected device ID format (e.g. `T07-D1`)?
-5. Do the judges' hotspots have internet? May our own router be used for levels other than L2?
-6. When and where will the L11 grid be marked? May CSI data collection happen at any time?
+5. ~~Do the judges' hotspots have internet?~~ Round A uses the judge's 2.4 GHz phone hotspot, which we assume has internet. Round C uses **our own** hotspot. Is our own hotspot fine for Round B too?
+6. ~~When will the L11 grid be marked?~~ Before the clock starts. May CSI data collection happen at any time before Round C?
+8. Is mapping the judges' accounts **S1 = B and S2 = A** (the Guardian linked to S1/B and D) acceptable?
+9. Will the judges bring the photo of A, or should we provide one?
 7. Where is the submission folder, and when exactly does "judging close"?
 
 ---
