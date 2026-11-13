@@ -43,3 +43,7 @@ temp/
 # Local large data
 datasets/
 data/raw/
+
+# Evidence (videos, screenshots) stays local and is uploaded to the submission folder
+evidence/
+*.mp4
