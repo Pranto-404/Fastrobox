@@ -49,3 +49,7 @@ evidence/
 *.mp4
 .pio/
 smartclass_L1.zip
+
+# Built write-ups (upload the PDF to the submission folder)
+docs/writeups/*/build/
+L01_writeup_DRAFT.pdf

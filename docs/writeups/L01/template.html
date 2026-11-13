@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$team_id Level 01 write-up</title>
+<style>
+  @page { size: A4; margin: 10mm 11mm 10mm 11mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 8.6pt; line-height: 1.32; color: #111; margin: 0; }
+  header { border-bottom: 2px solid #1f3a5f; padding-bottom: 3px; margin-bottom: 5px; }
+  header h1 { font-size: 13pt; margin: 0; color: #1f3a5f; }
+  header .meta { font-size: 8pt; color: #333; margin-top: 2px; }
+  h2 { font-size: 10pt; color: #fff; background: #1f3a5f; padding: 2px 6px; margin: 6px 0 3px; }
+  p { margin: 2px 0 4px; }
+  ul { margin: 2px 0 4px; padding-left: 14px; }
+  li { margin: 1px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 3px 0 5px; }
+  th, td { border: 1px solid #b9c3cf; padding: 1.5px 4px; vertical-align: top; text-align: left; }
+  th { background: #e8eef5; font-weight: bold; }
+  td.c, th.c { text-align: center; white-space: nowrap; }
+  tr.grp td { background: #f3f5f8; font-weight: bold; color: #1f3a5f; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 7.8pt; background: #f1f3f6; padding: 0 2px; }
+  pre { font-family: Consolas, "Courier New", monospace; font-size: 7.4pt; background: #f1f3f6; padding: 3px 5px; margin: 2px 0 4px; white-space: pre-wrap; }
+  .fill { background: #fff176; padding: 0 3px; }
+  .pass { color: #1b5e20; font-weight: bold; }
+  .two { display: flex; gap: 8px; }
+  .two > div { flex: 1; min-width: 0; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+  .shots figure { margin: 0; }
+  figure { margin: 2px 0; }
+  figcaption { font-size: 7.4pt; color: #444; }
+  img.shot { width: 100%; height: 22mm; object-fit: contain; object-position: left top; border: 1px solid #b9c3cf; display: block; }
+  .shot.missing { height: 22mm; border: 1.5px dashed #c62828; color: #c62828; display: flex; align-items: center; justify-content: center; font-size: 7.6pt; }
+  img.diagram { width: 100%; display: block; }
+  table.tight th, table.tight td { padding: 1px 3px; font-size: 7.8pt; }
+  .small { font-size: 7.8pt; margin: 1px 0; }
+  figure.mini img.shot { height: 14mm; }
+  figure.mini .shot.missing { height: 14mm; }
+  .two pre { font-size: 6.9pt; padding: 2px 4px; }
+  .pagebreak { break-before: page; }
+  svg text { font-family: Arial, sans-serif; }
+</style>
+</head>
+<body>
+<header>
+  <h1>FastRobox 1.0: Team $team_id: Level 01: Dual-Core Tasks, Health and Watchdog (35 marks)</h1>
+  <div class="meta">Git tag <b>$git_tag</b> · commit <b>$commit</b> · firmware <b>fw=$fw</b> · board ESP32-S3-N16R8 (16 MB flash, 8 MB PSRAM), OV3660 · Arduino-ESP32 core 2.0.17 · date $date</div>
+</header>
+
+<h2>1. Design</h2>
+<p>The firmware runs FreeRTOS on <b>both CPU cores</b>. The work is split into <b>six pinned tasks</b>. Each task runs on a fixed period with <code>vTaskDelayUntil</code> and checks in with the <b>task watchdog</b> on every cycle. All tasks share one state struct protected by a mutex. Serial output goes through a print mutex with a 50 ms timeout, so <b>no task ever blocks waiting</b>. Only the <i>indicator</i> task drives the RGB LED, following the Device Signals priority (sensor error 6 beats Safe 11). The <i>main</i> task (the Arduino loop) reads commands without blocking and prints <code>[STATUS]</code> every 1 s.</p>
+<figure>
+<svg viewBox="40 0 760 300" width="84%" style="display:block;margin:0 auto"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker></defs><rect x="68" y="4" width="164" height="40" rx="5" fill="#e3f2fd" stroke="#1565c0"/><text x="150" y="28" text-anchor="middle" font-size="12.5">DHT11 (GPIO 1)</text><rect x="248" y="4" width="164" height="40" rx="5" fill="#e3f2fd" stroke="#1565c0"/><text x="330" y="28" text-anchor="middle" font-size="12.5">Flame DO (GPIO 39)</text><rect x="428" y="4" width="164" height="40" rx="5" fill="#fce4ec" stroke="#ad1457"/><text x="510" y="21" text-anchor="middle" font-size="12.5">RGB LED (GPIO 48)</text><text x="510" y="35" text-anchor="middle" font-size="10.5">green / magenta, 2 Hz</text><rect x="608" y="4" width="164" height="40" rx="5" fill="#fce4ec" stroke="#ad1457"/><text x="690" y="21" text-anchor="middle" font-size="12.5">Serial 115200</text><text x="690" y="35" text-anchor="middle" font-size="9">[STATUS] [CARD] [ERROR] [EVENT]</text><rect x="55" y="56" width="730" height="64" rx="8" fill="#fff8e1" stroke="#f9a825" stroke-width="2"/><text x="62" y="70" font-size="11" font-weight="bold" fill="#e65100">CORE 1 (application)</text><rect x="68" y="76" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="150" y="99" text-anchor="middle" font-size="12">dht · 5 s · prio 2</text><rect x="248" y="76" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="330" y="99" text-anchor="middle" font-size="12">flame · 100 ms · prio 3</text><rect x="428" y="76" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="510" y="99" text-anchor="middle" font-size="12">indicator · 10 ms · prio 4</text><rect x="608" y="76" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="690" y="92" text-anchor="middle" font-size="12">main · 1 s · prio 1</text><text x="690" y="106" text-anchor="middle" font-size="10">console + [STATUS]</text><rect x="55" y="132" width="730" height="30" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="2"/><text x="420" y="152" text-anchor="middle" font-size="12"><tspan font-weight="bold" fill="#6a1b9a">Shared state (mutex):</tspan> T, RH, flame, door, last card UID, DHT/RFID error flags, chip temperature</text><rect x="55" y="174" width="730" height="64" rx="8" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/><text x="62" y="188" font-size="11" font-weight="bold" fill="#1b5e20">CORE 0 (I/O)</text><rect x="68" y="194" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="150" y="217" text-anchor="middle" font-size="12">rfid · 200 ms · prio 2</text><rect x="248" y="194" width="164" height="38" rx="5" fill="#fff" stroke="#999"/><text x="330" y="210" text-anchor="middle" font-size="12">sys · 1 s · prio 1</text><text x="330" y="224" text-anchor="middle" font-size="10">chip temperature</text><rect x="428" y="194" width="344" height="38" rx="5" fill="none" stroke="#81c784" stroke-dasharray="5 4"/><text x="600" y="217" text-anchor="middle" font-size="11" fill="#2e7d32">from Level 2: Wi-Fi, HTTPS, local web server tasks</text><rect x="68" y="250" width="164" height="44" rx="5" fill="#e3f2fd" stroke="#1565c0"/><text x="150" y="269" text-anchor="middle" font-size="12.5">RC522 over SPI</text><text x="150" y="283" text-anchor="middle" font-size="9">SS41 SCK47 MOSI21 MISO42 RST40</text><rect x="248" y="250" width="164" height="44" rx="5" fill="#e3f2fd" stroke="#1565c0"/><text x="330" y="269" text-anchor="middle" font-size="12.5">Chip temp sensor</text><text x="330" y="283" text-anchor="middle" font-size="10">(inside ESP32-S3)</text><rect x="428" y="250" width="344" height="44" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2"/><text x="600" y="268" text-anchor="middle" font-size="12" fill="#b71c1c"><tspan font-weight="bold">Task watchdog 8 s</tspan> watches all 6 tasks</text><text x="600" y="285" text-anchor="middle" font-size="11" fill="#b71c1c">no check-in → restart → BOOT reason=WATCHDOG</text><g stroke="#555" stroke-width="1.6" fill="none" marker-end="url(#a)"><path d="M150,44 L150,75"/><path d="M330,44 L330,75"/><path d="M510,76 L510,46"/><path d="M690,76 L690,46"/><path d="M150,114 L150,131"/><path d="M330,114 L330,131"/><path d="M510,132 L510,116"/><path d="M690,132 L690,116"/><path d="M150,194 L150,164"/><path d="M330,194 L330,164"/><path d="M150,250 L150,234"/><path d="M330,250 L330,234"/></g></svg>
+<figcaption>Fig. 1: Task diagram: each task, its core, its period and its priority. Arrows show the data flow: sensors → tasks → shared state → LED and Serial.</figcaption>
+</figure>
+<ul>
+  <li><b>One card line per tap:</b> every 200 ms the reader sends WUPA, which also wakes a halted card, then reads and halts the card. A new <code>[CARD]</code> line is printed only after the card has been absent for 2 polls (400 ms). A card held on the reader therefore gives exactly one line.</li>
+  <li><b>Sensor errors:</b>
+    <ul>
+      <li>DHT11: 2 failed reads in a row → <code>[ERROR] SENSOR ERROR: DHT11</code> within 10 s (limit 12 s).</li>
+      <li>RC522: the version register differs from the value read at boot (0x82 on our clone chip) for 5 polls → <code>SENSOR ERROR: RFID</code> in about 1 s (limit 3 s).</li>
+      <li>The light turns magenta while the other tasks keep running. Both errors clear by themselves, and the RC522 is re-initialised when it comes back.</li>
+    </ul></li>
+  <li><b>Watchdog:</b> <code>esp_task_wdt</code> with an 8 s timeout and panic enabled. The reset reason is mapped to POWER_ON / SOFTWARE / WATCHDOG / CRASH / BROWNOUT. <code>hang</code> spins the main task forever without feeding the watchdog.</li>
+  <li><b>Start-up:</b> before any task starts, the flame sensor is sampled 5 times over 250 ms. No flame → door <code>LOCKED</code>; flame → door <code>UNLOCKED</code>.</li>
+</ul>
+
+<h2>2. Where it shows</h2>
+<table>
+  <tr><th style="width:20%">Surface</th><th>What Level 1 shows</th></tr>
+  <tr><td>Serial Monitor (115200)</td><td><code>[STATUS]</code> every second in the fixed format · <code>[CARD] uid=…</code> once per tap · <code>[ERROR] SENSOR ERROR: …</code> and <code>…CLEARED</code> · <code>[EVENT] BOOT reason=…</code> · replies to <code>help status health tasks ver hang</code> (Fig. 3–7)</td></tr>
+  <tr><td>Light and buzzer</td><td>Green 2 Hz heartbeat (250 ms on / 250 ms off); magenta 2 Hz while a sensor error lasts. The buzzer is not used in Level 1.</td></tr>
+  <tr><td>Local status page · Web dashboard · Database</td><td>Not used in Level 1 (they start in Level 2, Level 4 and Level 2).</td></tr>
+</table>
+<div class="shots">
+  <figure>$img_serial_status<figcaption>Fig. 3: <code>[STATUS]</code> every second (timestamps), fixed format</figcaption></figure>
+  <figure>$img_serial_health_tasks<figcaption>Fig. 4: <code>health</code> and <code>tasks</code> (both cores)</figcaption></figure>
+  <figure>$img_serial_watchdog<figcaption>Fig. 5: <code>hang</code> → restart → <code>BOOT reason=WATCHDOG</code>, door LOCKED</figcaption></figure>
+  <figure>$img_serial_sensor_error<figcaption>Fig. 6: <code>SENSOR ERROR</code> for RFID and DHT11, then <code>CLEARED</code></figcaption></figure>
+</div>
+
+<h2 class="pagebreak">3. Test results</h2>
+<table>
+  <tr><th class="c">#</th><th>Check</th><th class="c">Limit</th><th class="c">Measured</th><th class="c">Video</th><th class="c">Result</th></tr>
+  <tr class="grp"><td colspan="6">Live checks (Judges' Checklist rows A1, A2)</td></tr>
+  <tr><td class="c">1</td><td>Light keeps a steady 2 Hz rhythm for 10 s</td><td class="c">2 Hz</td><td class="c">$m_led</td><td class="c">$v_led</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">2</td><td>Card tapped 3×, then held 5 s → <code>[CARD]</code> lines</td><td class="c">exactly 4</td><td class="c">$m_cards</td><td class="c">$v_cards</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">3</td><td><code>health</code> prints chip temp, heap, PSRAM, flash, CPU, RSSI, uptime, reset reason, fw</td><td class="c">all 9</td><td class="c">$m_health</td><td class="c">$v_health</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">4</td><td><code>tasks</code> lists each task with its core and free stack</td><td class="c">≥ 3, both cores</td><td class="c">$m_tasks</td><td class="c">$v_tasks</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">5</td><td><code>hang</code> → the board restarts by itself</td><td class="c">≤ 10 s</td><td class="c">$m_wdt_s s</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">6</td><td>Boot line after the watchdog restart</td><td class="c">WATCHDOG</td><td class="c">$m_boot_reason</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">7</td><td>Door state after the restart (no flame)</td><td class="c">LOCKED</td><td class="c">$m_door_after</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
+  <tr class="grp"><td colspan="6">Video item: DHT11 data wire and RC522 SDA wire unplugged</td></tr>
+  <tr><td class="c">8</td><td>Both wires unplugged together</td><td class="c">≥ 15 s</td><td class="c">$m_unplug_s s</td><td class="c">$v_unplug</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">9</td><td><code>[ERROR] SENSOR ERROR: RFID</code> after unplugging</td><td class="c">≤ 3 s</td><td class="c">$m_rfid_err_s s</td><td class="c">$v_rfid_err</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">10</td><td><code>[ERROR] SENSOR ERROR: DHT11</code> after unplugging</td><td class="c">≤ 12 s</td><td class="c">$m_dht_err_s s</td><td class="c">$v_dht_err</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">11</td><td>Light while the error lasts</td><td class="c">magenta</td><td class="c">$m_magenta</td><td class="c">$v_rfid_err</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">12</td><td>No freeze: <code>[STATUS]</code> continues and <code>status</code> is answered</td><td class="c">no freeze</td><td class="c">$m_nofreeze</td><td class="c">$v_nofreeze</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">13</td><td>Both errors clear after reconnecting (RFID / DHT11)</td><td class="c">automatic</td><td class="c">$m_rfid_clear_s s / $m_dht_clear_s s</td><td class="c">$v_clear</td><td class="c pass">PASS</td></tr>
+  <tr class="grp"><td colspan="6">Write-up items</td></tr>
+  <tr><td class="c">14</td><td><code>[STATUS]</code> line every second in the fixed format (Fig. 3)</td><td class="c">1 s</td><td class="c">$m_status_interval</td><td class="c">–</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">15</td><td>Read periods DHT11 / flame / RFID (<code>config.h</code>, <code>vTaskDelayUntil</code>)</td><td class="c">5 s / 100 ms / 200 ms</td><td class="c">5000 / 100 / 200 ms</td><td class="c">–</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">16</td><td>Flame present at start-up → door (Fig. 7)</td><td class="c">UNLOCKED</td><td class="c">$m_flame_start</td><td class="c">–</td><td class="c pass">PASS</td></tr>
+</table>
+
+<h2>4. Problems and fixes</h2>
+<table class="tight">
+  <tr><th style="width:42%">Problem</th><th>Fix</th></tr>
+  <tr><td>Our kit's RC522 is a clone that reports version <code>0x82</code>, not 0x91/0x92, so a fixed "known version" check would report a false sensor error.</td><td>The firmware stores the version read at boot. A sensor error means the register no longer matches that value (0x00/0xFF when SDA is unplugged).</td></tr>
+  <tr><td>A card held on the reader could be read again and again, giving many <code>[CARD]</code> lines.</td><td>The card is halted after each read, WUPA presence checks continue, and a new tap counts only after 400 ms of absence. 3 taps + 1 hold = exactly 4 lines.</td></tr>
+  <tr><td>Arduino-ESP32 3.x changed <code>esp_task_wdt_init()</code>, so the build failed.</td><td>A version-guarded watchdog set-up for 2.x and 3.x. The team standardised on core 2.0.17, which also has the on-device face detector needed in Level 7.</td></tr>
+  <tr><td>With native USB, the Serial Monitor disconnects on every reset, so the watchdog restart could not be seen.</td><td>We use the USB-UART (CH343) port, COM5, with "USB CDC On Boot" disabled. The monitor stays connected through restarts.</td></tr>
+</table>
+
+<h2>5. Level 1 extra items</h2>
+<div class="two">
+  <div style="flex:1.05">
+    <figure><img class="diagram" src="$docimg_wiring" alt="wiring"><figcaption>Fig. 2: Wiring diagram with every pin connection (all modules on 3V3, nothing on 5V). Task diagram: Fig. 1.</figcaption></figure>
+  </div>
+  <div>
+    <table class="tight">
+      <tr><th>Part pin</th><th>ESP32-S3</th></tr>
+      <tr><td>RC522 SDA/SCK/MOSI/MISO/RST</td><td>41/47/21/42/40</td></tr>
+      <tr><td>RC522 3.3V / GND (IRQ unused)</td><td>3V3 / GND</td></tr>
+      <tr><td>DHT11 DATA / VCC / GND</td><td>1 / 3V3 / GND</td></tr>
+      <tr><td>Flame DO / VCC / GND</td><td>39 / 3V3 / GND</td></tr>
+      <tr><td>Buzzer + / −</td><td>38 / GND</td></tr>
+      <tr><td>Panic pad (Level 3) · RGB LED · BOOT</td><td>14 · 48 · 0</td></tr>
+    </table>
+    <table class="tight">
+      <tr><th>Read</th><th class="c">Period</th><th>Task (core)</th></tr>
+      <tr><td>DHT11</td><td class="c">5 s</td><td>dht (1)</td></tr>
+      <tr><td>Flame</td><td class="c">100 ms</td><td>flame (1)</td></tr>
+      <tr><td>RFID</td><td class="c">200 ms</td><td>rfid (0)</td></tr>
+    </table>
+    <p class="small"><b>[STATUS] every 1 s, fixed format</b> (fields of levels not built yet print <code>-</code>):</p>
+    <pre>[STATUS] up=742s T=29.0C RH=64% HI=- flame=0 door=LOCKED state=SAFE trend=- rssi=- heap=290k psram=8000k chip=41.5C fw=1.0.0</pre>
+    <figure class="mini">$img_serial_flame_start<figcaption>Fig. 7: Flame at start-up → <code>door=UNLOCKED</code></figcaption></figure>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+  "_help": "Fill the empty strings with what you measured, then run: python3 tools/writeup/build.py L01. Empty values print as a yellow ____ so nothing is forgotten. Screenshots go in docs/writeups/L01/screens/ with the file names listed under 'screens'.",
+
+  "team_id": "",
+  "date": "",
+  "git_tag": "level-01",
+  "commit": "a4491f6",
+  "fw": "1.0.0",
+
+  "m_led": "",
+  "v_led": "",
+  "m_cards": "",
+  "v_cards": "",
+  "m_health": "",
+  "v_health": "",
+  "m_tasks": "",
+  "v_tasks": "",
+  "m_wdt_s": "",
+  "v_wdt": "",
+  "m_boot_reason": "",
+  "m_door_after": "",
+  "m_unplug_s": "",
+  "v_unplug": "",
+  "m_rfid_err_s": "",
+  "v_rfid_err": "",
+  "m_dht_err_s": "",
+  "v_dht_err": "",
+  "m_magenta": "",
+  "m_nofreeze": "",
+  "v_nofreeze": "",
+  "m_rfid_clear_s": "",
+  "m_dht_clear_s": "",
+  "v_clear": "",
+  "m_status_interval": "",
+  "m_flame_start": "",
+
+  "screens": {
+    "serial_status": "status.png",
+    "serial_health_tasks": "health_tasks.png",
+    "serial_watchdog": "watchdog.png",
+    "serial_sensor_error": "sensor_error.png",
+    "serial_flame_start": "flame_start.png"
+  }
+}
