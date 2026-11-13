@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1180" viewBox="0 0 1600 1180" font-family="Arial,Helvetica,sans-serif">
+<rect width="1600" height="1180" fill="#ffffff"/>
+<text x="40" y="48" font-size="30" font-weight="bold" fill="#111">FastRobox kit wiring: ESP32-S3 WROOM (N16R8, OV3660)</text>
+<text x="40" y="82" font-size="18" fill="#b00020" font-weight="bold">Unplug USB while wiring. Every module on 3V3. NOTHING on 5V. Read the pin labels printed on the board.</text>
+<rect x="560" y="140" width="300" height="822" rx="14" fill="#1b1b1b"/>
+<rect x="645" y="170" width="130" height="150" rx="6" fill="#9a9a9a"/><text x="710" y="235" font-size="14" text-anchor="middle" fill="#222">ESP32-S3</text><text x="710" y="255" font-size="14" text-anchor="middle" fill="#222">N16R8</text>
+<circle cx="710" cy="370" r="34" fill="#333" stroke="#777" stroke-width="3"/><text x="710" y="420" font-size="14" text-anchor="middle" fill="#ddd">OV3660 camera</text>
+<text x="710" y="932" font-size="15" text-anchor="middle" fill="#ddd">USB-C   USB-C</text>
+<text x="710" y="892" font-size="13" text-anchor="middle" fill="#bbb">RST  BOOT(0)  RGB LED(48)</text>
+<circle cx="575" cy="190" r="9" fill="#d32f2f" stroke="#fff" stroke-width="2"/>
+<text x="592" y="195" font-size="15" fill="#fff" font-weight="bold">3V3</text>
+<circle cx="575" cy="228" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="233" font-size="15" fill="#aaa" font-weight="normal">EN</text>
+<circle cx="575" cy="266" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="271" font-size="15" fill="#aaa" font-weight="normal">4</text>
+<text x="548" y="271" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="304" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="309" font-size="15" fill="#aaa" font-weight="normal">5</text>
+<text x="548" y="309" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="342" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="347" font-size="15" fill="#aaa" font-weight="normal">6</text>
+<text x="548" y="347" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="380" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="385" font-size="15" fill="#aaa" font-weight="normal">7</text>
+<text x="548" y="385" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="418" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="423" font-size="15" fill="#aaa" font-weight="normal">15</text>
+<text x="548" y="423" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="456" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="461" font-size="15" fill="#aaa" font-weight="normal">16</text>
+<text x="548" y="461" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="494" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="499" font-size="15" fill="#aaa" font-weight="normal">17</text>
+<text x="548" y="499" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="532" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="537" font-size="15" fill="#aaa" font-weight="normal">18</text>
+<text x="548" y="537" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="570" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="575" font-size="15" fill="#aaa" font-weight="normal">8</text>
+<text x="548" y="575" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="608" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="592" y="613" font-size="15" fill="#aaa" font-weight="normal">3</text>
+<circle cx="575" cy="646" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="592" y="651" font-size="15" fill="#aaa" font-weight="normal">46</text>
+<circle cx="575" cy="684" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="689" font-size="15" fill="#aaa" font-weight="normal">9</text>
+<text x="548" y="689" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="722" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="727" font-size="15" fill="#aaa" font-weight="normal">10</text>
+<text x="548" y="727" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="760" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="765" font-size="15" fill="#aaa" font-weight="normal">11</text>
+<text x="548" y="765" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="798" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="803" font-size="15" fill="#aaa" font-weight="normal">12</text>
+<text x="548" y="803" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="836" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="841" font-size="15" fill="#aaa" font-weight="normal">13</text>
+<text x="548" y="841" font-size="12" text-anchor="end" fill="#999">camera</text>
+<circle cx="575" cy="874" r="9" fill="#6a1b9a" stroke="#fff" stroke-width="2"/>
+<text x="592" y="879" font-size="15" fill="#fff" font-weight="bold">14</text>
+<circle cx="575" cy="912" r="9" fill="#555" stroke="#fff" stroke-width="2"/>
+<text x="592" y="917" font-size="15" fill="#aaa" font-weight="normal">5V</text>
+<circle cx="845" cy="190" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="195" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">TX</text>
+<circle cx="845" cy="228" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="233" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">RX</text>
+<circle cx="845" cy="266" r="9" fill="#f9a825" stroke="#fff" stroke-width="2"/>
+<text x="828" y="271" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">1</text>
+<circle cx="845" cy="304" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="309" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">2</text>
+<circle cx="845" cy="342" r="9" fill="#1565c0" stroke="#fff" stroke-width="2"/>
+<text x="828" y="347" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">42</text>
+<circle cx="845" cy="380" r="9" fill="#fbc02d" stroke="#fff" stroke-width="2"/>
+<text x="828" y="385" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">41</text>
+<circle cx="845" cy="418" r="9" fill="#9e9e9e" stroke="#fff" stroke-width="2"/>
+<text x="828" y="423" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">40</text>
+<circle cx="845" cy="456" r="9" fill="#8e24aa" stroke="#fff" stroke-width="2"/>
+<text x="828" y="461" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">39</text>
+<circle cx="845" cy="494" r="9" fill="#ef6c00" stroke="#fff" stroke-width="2"/>
+<text x="828" y="499" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">38</text>
+<circle cx="845" cy="532" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="537" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">37</text>
+<circle cx="845" cy="570" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="575" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">36</text>
+<circle cx="845" cy="608" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="613" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">35</text>
+<circle cx="845" cy="646" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="651" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">0</text>
+<circle cx="845" cy="684" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="689" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">45</text>
+<circle cx="845" cy="722" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="727" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">48</text>
+<circle cx="845" cy="760" r="9" fill="#e65100" stroke="#fff" stroke-width="2"/>
+<text x="828" y="765" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">47</text>
+<circle cx="845" cy="798" r="9" fill="#2e7d32" stroke="#fff" stroke-width="2"/>
+<text x="828" y="803" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">21</text>
+<circle cx="845" cy="836" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="841" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">20</text>
+<circle cx="845" cy="874" r="9" fill="#888" stroke="#fff" stroke-width="2"/>
+<text x="828" y="879" font-size="15" text-anchor="end" fill="#aaa" font-weight="normal">19</text>
+<circle cx="845" cy="912" r="9" fill="#111" stroke="#fff" stroke-width="2"/>
+<text x="828" y="917" font-size="15" text-anchor="end" fill="#fff" font-weight="bold">GND</text>
+<text x="548" y="917" font-size="13" text-anchor="end" fill="#b00020" font-weight="bold">5V: do NOT use</text>
+<text x="874" y="537" font-size="12" fill="#999">PSRAM</text>
+<text x="874" y="575" font-size="12" fill="#999">PSRAM</text>
+<text x="874" y="613" font-size="12" fill="#999">PSRAM</text>
+<text x="874" y="841" font-size="12" fill="#999">USB</text>
+<text x="874" y="879" font-size="12" fill="#999">USB</text>
+<text x="874" y="651" font-size="12" fill="#999">BOOT</text>
+<text x="874" y="727" font-size="12" fill="#999">RGB LED</text>
+<text x="874" y="309" font-size="12" fill="#999">LED</text>
+<rect x="1180" y="120" width="230" height="154" rx="10" fill="#1e88e5" stroke="#0d3b66" stroke-width="2"/>
+<text x="1315.0" y="146" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">DHT11</text>
+<text x="1315.0" y="262" font-size="13" fill="#e3f2fd" text-anchor="middle">blue sensor module</text>
+<circle cx="1180" cy="170" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="175" font-size="15" fill="#fff" font-weight="bold">VCC</text>
+<circle cx="1180" cy="208" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="213" font-size="15" fill="#fff" font-weight="bold">DATA</text>
+<circle cx="1180" cy="246" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="251" font-size="15" fill="#fff" font-weight="bold">GND</text>
+<rect x="1180" y="300" width="260" height="344" rx="10" fill="#1565c0" stroke="#0d3b66" stroke-width="2"/>
+<text x="1330.0" y="326" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">RC522 RFID</text>
+<text x="1330.0" y="632" font-size="13" fill="#e3f2fd" text-anchor="middle">3.3 V ONLY</text>
+<circle cx="1180" cy="350" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="355" font-size="15" fill="#fff" font-weight="bold">SDA</text>
+<circle cx="1180" cy="388" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="393" font-size="15" fill="#fff" font-weight="bold">SCK</text>
+<circle cx="1180" cy="426" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="431" font-size="15" fill="#fff" font-weight="bold">MOSI</text>
+<circle cx="1180" cy="464" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="469" font-size="15" fill="#fff" font-weight="bold">MISO</text>
+<circle cx="1180" cy="502" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="507" font-size="15" fill="#fff" font-weight="bold">IRQ</text>
+<circle cx="1180" cy="540" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="545" font-size="15" fill="#fff" font-weight="bold">GND</text>
+<circle cx="1180" cy="578" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="583" font-size="15" fill="#fff" font-weight="bold">RST</text>
+<circle cx="1180" cy="616" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="621" font-size="15" fill="#fff" font-weight="bold">3.3V</text>
+<rect x="1180" y="690" width="230" height="154" rx="10" fill="#0277bd" stroke="#0d3b66" stroke-width="2"/>
+<text x="1315.0" y="716" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">Flame sensor</text>
+<text x="1315.0" y="832" font-size="13" fill="#e3f2fd" text-anchor="middle">blue screw = sensitivity</text>
+<circle cx="1180" cy="740" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="745" font-size="15" fill="#fff" font-weight="bold">VCC</text>
+<circle cx="1180" cy="778" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="783" font-size="15" fill="#fff" font-weight="bold">GND</text>
+<circle cx="1180" cy="816" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="821" font-size="15" fill="#fff" font-weight="bold">DO</text>
+<rect x="1180" y="880" width="230" height="116" rx="10" fill="#37474f" stroke="#0d3b66" stroke-width="2"/>
+<text x="1315.0" y="906" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">Active buzzer</text>
+<text x="1315.0" y="984" font-size="13" fill="#e3f2fd" text-anchor="middle">long leg = +</text>
+<circle cx="1180" cy="930" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="935" font-size="15" fill="#fff" font-weight="bold">+</text>
+<circle cx="1180" cy="968" r="8" fill="#ffd54f" stroke="#333" stroke-width="2"/>
+<text x="1196" y="973" font-size="15" fill="#fff" font-weight="bold">-</text>
+<polyline points="845,266 900,266 900,208 1180,208" fill="none" stroke="#f9a825" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,342 930,342 930,464 1180,464" fill="none" stroke="#1565c0" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,380 960,380 960,350 1180,350" fill="none" stroke="#fbc02d" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,418 990,418 990,578 1180,578" fill="none" stroke="#9e9e9e" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,456 1020,456 1020,816 1180,816" fill="none" stroke="#8e24aa" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,494 1050,494 1050,930 1180,930" fill="none" stroke="#ef6c00" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,760 1080,760 1080,388 1180,388" fill="none" stroke="#e65100" stroke-width="5" stroke-linejoin="round" />
+<polyline points="845,798 1110,798 1110,426 1180,426" fill="none" stroke="#2e7d32" stroke-width="5" stroke-linejoin="round" />
+<text x="1250" y="507" font-size="13" fill="#e3f2fd">(leave empty)</text>
+<polyline points="575,190 500,190 500,105 1150,105 1150,740" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linejoin="round" />
+<polyline points="1150,170 1180,170" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1150" cy="170" r="7" fill="#d32f2f"/>
+<polyline points="1150,616 1180,616" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1150" cy="616" r="7" fill="#d32f2f"/>
+<polyline points="1150,740 1180,740" fill="none" stroke="#d32f2f" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1150" cy="740" r="7" fill="#d32f2f"/>
+<text x="760" y="100" font-size="14" fill="#d32f2f" font-weight="bold">3V3 joint: 1 wire from board → 3 modules</text>
+<polyline points="845,912 885,912 885,1120 1165,1120 1165,246" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round" />
+<polyline points="1165,246 1180,246" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1165" cy="246" r="7" fill="#111"/>
+<polyline points="1165,540 1180,540" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1165" cy="540" r="7" fill="#111"/>
+<polyline points="1165,778 1180,778" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1165" cy="778" r="7" fill="#111"/>
+<polyline points="1165,968 1180,968" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round" />
+<circle cx="1165" cy="968" r="7" fill="#111"/>
+<text x="905" y="1145" font-size="14" fill="#111" font-weight="bold">GND joint: 1 wire from board GND → 4 modules</text>
+<polyline points="575,874 330,874" fill="none" stroke="#6a1b9a" stroke-width="6" stroke-linejoin="round" />
+<line x1="300" y1="874" x2="330" y2="874" stroke="#b87333" stroke-width="8" stroke-linecap="round"/>
+<text x="290" y="860" font-size="16" fill="#6a1b9a" font-weight="bold" text-anchor="end">PANIC PAD</text>
+<text x="290" y="882" font-size="14" fill="#333" text-anchor="end">bare metal end of one wire</text>
+<text x="290" y="902" font-size="14" fill="#333" text-anchor="end">must not touch any pin</text>
+<text x="40" y="150" font-size="18" font-weight="bold" fill="#111">Connections</text>
+<rect x="40" y="168" width="30" height="10" fill="#d32f2f"/><text x="80" y="180" font-size="15" fill="#111">3V3 → RC522 3.3V, DHT11 VCC, Flame VCC</text>
+<rect x="40" y="198" width="30" height="10" fill="#111"/><text x="80" y="210" font-size="15" fill="#111">GND → RC522, DHT11, Flame, Buzzer −</text>
+<rect x="40" y="228" width="30" height="10" fill="#fbc02d"/><text x="80" y="240" font-size="15" fill="#111">GPIO 41 → RC522 SDA</text>
+<rect x="40" y="258" width="30" height="10" fill="#e65100"/><text x="80" y="270" font-size="15" fill="#111">GPIO 47 → RC522 SCK</text>
+<rect x="40" y="288" width="30" height="10" fill="#2e7d32"/><text x="80" y="300" font-size="15" fill="#111">GPIO 21 → RC522 MOSI</text>
+<rect x="40" y="318" width="30" height="10" fill="#1565c0"/><text x="80" y="330" font-size="15" fill="#111">GPIO 42 → RC522 MISO</text>
+<rect x="40" y="348" width="30" height="10" fill="#9e9e9e"/><text x="80" y="360" font-size="15" fill="#111">GPIO 40 → RC522 RST</text>
+<rect x="40" y="378" width="30" height="10" fill="#f9a825"/><text x="80" y="390" font-size="15" fill="#111">GPIO 1 → DHT11 DATA</text>
+<rect x="40" y="408" width="30" height="10" fill="#8e24aa"/><text x="80" y="420" font-size="15" fill="#111">GPIO 39 → Flame DO</text>
+<rect x="40" y="438" width="30" height="10" fill="#ef6c00"/><text x="80" y="450" font-size="15" fill="#111">GPIO 38 → Buzzer +</text>
+<rect x="40" y="468" width="30" height="10" fill="#6a1b9a"/><text x="80" y="480" font-size="15" fill="#111">GPIO 14 → panic wire (bare end)</text>
+<text x="40" y="560" font-size="14" fill="#555">Board held camera-up, USB-C at the bottom.</text>
+<text x="40" y="582" font-size="14" fill="#555">Grey pins = camera / PSRAM / USB / strapping.</text>
+<text x="40" y="604" font-size="14" fill="#555">Joints: strip ~1 cm, twist together, tape.</text>
+</svg>
