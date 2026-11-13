@@ -27,7 +27,8 @@ docs/       plan, checklist, API contract, wiring, write-ups
 
 > This section is required from Level 2 on and must stay current. It will be filled in with exact commands as each part lands.
 
-- **Firmware:** `cd firmware && pio run -t upload && pio run -t uploadfs`
+- **Firmware (PlatformIO):** `cd firmware && pio run -e uart -t upload && pio device monitor`
+- **Firmware (Arduino IDE):** open `firmware/smartclass/smartclass.ino`. Use esp32 core 2.0.17 with board ESP32S3 Dev Module, Flash 16MB, PSRAM OPI and USB CDC On Boot Disabled. Install the MFRC522 and "DHT sensor library for ESPx" libraries.
 - **Platform:** `cd deploy && cp .env.example .env` (fill in values locally; never commit them), then `docker compose up -d`
 
 ## Rules we follow in this repo
