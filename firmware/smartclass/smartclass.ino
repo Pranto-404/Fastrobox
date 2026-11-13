@@ -34,6 +34,8 @@ void setup() {
 
   logf("[EVENT] BOOT reason=%s", resetReasonName());
   logf("[STATUS] SmartClass fw=%s team=%s", FW_VERSION, TEAM_ID);
+  if (!psramFound()) logf("[ERROR] PSRAM not found: set Tools > PSRAM > \"OPI PSRAM\" and upload again");
+  withState([](DeviceState &s) { s.chipTempC = temperatureRead(); });  // first [STATUS] line shows a real value
 
   // Level 1, task 6: check the flame sensor first. No flame -> door LOCKED, flame -> door UNLOCKED.
   bool flame = readFlameAtStartup();
