@@ -1,7 +1,18 @@
 # Deployment
 
-Target: Vercel (web app + API) and Supabase (Postgres). **Not deployed yet**: deploying needs the
-team's Vercel and Supabase accounts (see "What is needed" below).
+**Production:** https://fastrobox-rouge.vercel.app — Vercel project `fastrobox` (team `challanger2`),
+root directory `web`, production branch `main`, functions in `sin1` (Singapore), database Neon Postgres
+`fastrobox-db` (Singapore) connected through the Vercel Marketplace (`DATABASE_URL`,
+`DATABASE_URL_UNPOOLED`). Every push to `main` deploys; other branches get preview URLs.
+
+How the build works (`web/vercel.json` → `npm run vercel-build`): apply pending SQL migrations on the
+direct connection, create the first Admin from `BOOTSTRAP_ADMIN_USERNAME` / `BOOTSTRAP_ADMIN_PASSWORD`
+only if no Admin exists, then `next build`. After the first deploy those two variables are no longer
+used and can be deleted in Vercel → Settings → Environment Variables.
+
+Device firmware server address: `https://fastrobox-rouge.vercel.app` (API base `/api/device/v1`).
+
+The steps below document how to recreate the setup from scratch (Vercel + Neon, or Supabase).
 
 ## 1. Database (Supabase)
 
@@ -43,7 +54,5 @@ device, and give the judges the addresses: `/login`, `/dashboard`, `/rooms/<id>`
 
 | Item | Why |
 |---|---|
-| Vercel account access | to deploy the public HTTPS site |
-| Supabase project + connection string | production database |
 | Telegram bot token + teachers' chat ids | Level 4 phone alerts |
 | Hosting for the Python face/vision service | Levels 7–11 (not serverless) |

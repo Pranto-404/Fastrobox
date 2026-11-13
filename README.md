@@ -9,7 +9,8 @@ Official version-controlled workspace for the Fastrobox hackathon project.
 - **Firmware:** USB bring-up and Level 1 sketches committed; **not yet verified on the physical board.**
 - **Web platform (`web/`):** backend, device API, roles, live dashboards, Bangla, admin, attendance
   and security logic implemented and tested without hardware (43 automated tests + 17 browser checks).
-  **Not deployed yet; no level has been judged.** Status per level: [`docs/LEVEL_MAPPING.md`](docs/LEVEL_MAPPING.md).
+  **Live:** https://fastrobox-rouge.vercel.app (Vercel, functions in Singapore `sin1`, Neon Postgres).
+  **No level has been judged yet.** Status per level: [`docs/LEVEL_MAPPING.md`](docs/LEVEL_MAPPING.md).
 
 ## Layout
 
