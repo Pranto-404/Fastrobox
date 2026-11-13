@@ -125,4 +125,18 @@ Then type `watch` and try each part:
 | Unplug DHT11 DATA | `T=ERR`. Plug back in → values return |
 | Unplug RC522 SDA | `rfid=ERR`. Plug back in → `OK` |
 
+### Arduino IDE alternative (for a quick test only; the team standard is VS Code + PlatformIO)
+
+1. Boards Manager: install **"esp32 by Espressif" version 2.0.17**. Do not use 3.x, because it dropped the face detection we need for L7.
+2. Library Manager: install **"MFRC522" (GithubCommunity) 1.4.11** and **"DHT sensor library for ESPx" (beegee_tokyo)**.
+3. Make a folder `selftest/`. Copy `src/main.cpp` into it as `selftest.ino`, and copy `include/pins.h` next to it.
+4. Tools menu:
+   - Board **ESP32S3 Dev Module**
+   - Flash Size **16MB (128Mb)**
+   - PSRAM **OPI PSRAM**
+   - Partition Scheme **16M Flash (3MB APP/9.9MB FATFS)**
+   - USB CDC On Boot **Disabled** (UART port) or **Enabled** (native USB port)
+   - Upload Speed 921600
+5. Serial Monitor at 115200, line ending **Newline**.
+
 If a test fails, check the wire for that part against the table in section 2. Every value printed here goes into the Level 1 write-up (wiring diagram + measured values).
