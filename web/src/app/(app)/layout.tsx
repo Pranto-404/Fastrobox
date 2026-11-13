@@ -5,6 +5,7 @@ import { isDemoMode } from "@/lib/env";
 import { I18nProvider } from "@/components/i18n-client";
 import { Sidebar } from "@/components/Sidebar";
 import { LiveBanner } from "@/components/LiveBanner";
+import { WeatherStrip } from "@/components/Weather";
 import { LangSwitch, LogoutButton } from "@/components/LangSwitch";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </header>
           <main className="flex-1 space-y-6 px-4 py-6 sm:px-6">
             <LiveBanner />
+            <WeatherStrip />
             {children}
           </main>
         </div>

@@ -93,6 +93,39 @@ try {
   check("guardian sees linked child", (await g.page.locator("text=Student One").count()) > 0);
   check("guardian does not see other child", (await g.page.locator("text=Student Two").count()) === 0);
   if (shots) await g.page.screenshot({ path: `${shots}/guardian-mobile.png`, fullPage: true });
+
+  // Level 6: history/report/assistant role limits, assistant "no data", TEST Danger notice banner
+  for (const path of ["/history", "/reports", "/assistant"]) {
+    const r = await s1.page.goto(`${BASE}${path}`);
+    check(`student refused ${path} (403)`, r.status() === 403);
+  }
+  await t.page.goto(`${BASE}/history`);
+  await t.page.waitForSelector("text=Temperature, humidity and heat index", { timeout: 10000 });
+  await t.page.waitForSelector(".recharts-line", { timeout: 15000 });
+  check("teacher sees the history chart", true);
+  if (shots) await t.page.screenshot({ path: `${shots}/history.png`, fullPage: true });
+  await t.page.goto(`${BASE}/assistant`);
+  await t.page.fill("#aq", "What was the highest temperature on 2025-01-05?");
+  await t.page.click("button:has-text('Ask')");
+  await t.page.waitForSelector("text=No data for 2025-01-05", { timeout: 10000 });
+  check("assistant answers 'no data' for a date without data", true);
+  await t.page.fill("#aq", "What was today's highest temperature?");
+  await t.page.click("button:has-text('Ask')");
+  await t.page.waitForSelector("text=The highest temperature on", { timeout: 10000 });
+  check("assistant answers from stored data", true);
+  if (shots) await t.page.screenshot({ path: `${shots}/assistant.png` });
+
+  await a.page.goto(`${BASE}/weather`);
+  await a.page.fill("#wmsg", "Cyclone drill");
+  const t0 = Date.now();
+  await a.page.click("button:has-text('Add TEST notice')");
+  await t.page.goto(`${BASE}/dashboard`);
+  await t.page.waitForSelector("text=WEATHER DANGER: TEST: Cyclone drill", { timeout: 10000 });
+  check("Danger notice banner on another role's dashboard within 10 s", Date.now() - t0 < 10000, `${Date.now() - t0} ms`);
+  if (shots) await t.page.screenshot({ path: `${shots}/weather-banner.png` });
+  await a.page.click("button:has-text('Remove')");
+  await t.page.waitForSelector("text=WEATHER DANGER", { state: "detached", timeout: 10000 });
+  check("removing the notice clears the banner", true);
 } finally {
   await browser.close();
 }
