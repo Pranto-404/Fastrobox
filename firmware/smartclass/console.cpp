@@ -49,6 +49,7 @@ static void handleCommand(String cmd) {
     logf("[CMD]   csi     Wi-Fi CSI packets/s, subcarriers, channel (Level 11)");
     logf("[CMD]   teacher the next tapped tag is saved as a Teacher tag");
     logf("[CMD]   touch   panic-pad reading now vs the start-up baseline");
+    logf("[CMD]   resetfire  bench reset over USB (normally Reset fire on the platform); refused while flame is present");
   } else if (cmd == "status") {
     printStatusLine();
   } else if (cmd == "health") {
@@ -71,6 +72,8 @@ static void handleCommand(String cmd) {
     uint32_t v = touchRead(PIN_TOUCH);
     logf("[CMD] touch value=%lu baseline=%lu ratio=%.2f (panic above %.2f)", (unsigned long)v,
          (unsigned long)s.touchBaseline, s.touchBaseline ? (float)v / s.touchBaseline : 0.f, TOUCH_RATIO);
+  } else if (cmd == "resetfire") {
+    safetyResetFire("USB console");
   } else if (cmd == "teacher") {
     safetyArmTeacherRegistration();
   } else if (cmd == "csi") {

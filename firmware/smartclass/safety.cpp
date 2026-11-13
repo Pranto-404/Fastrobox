@@ -86,7 +86,7 @@ void safetyOnCardTap(const char *uid) {
     return;
   }
   DeviceState s = stateSnapshot();
-  bool sounding = s.fire || s.panic || (s.heatStatus == 2 && !s.dangerSilenced);
+  bool sounding = (s.fire && !s.silenced) || s.panic || (s.heatStatus == 2 && !s.dangerSilenced);
   if (!sounding) return;  // nothing to silence: a tap is just a card tap
   bool teacher = isTeacherTag(uid);
   if (!teacher) {
@@ -201,7 +201,16 @@ static void safetyTask(void *) {
     // Fire: flame seen continuously for 2 s -> FIRE at once (no 3 s hold). Gaps < 300 ms are flicker.
     if (flameRecently(s, FLAME_GAP_MS)) {
       if (!flameSince) flameSince = now;
-      if (!s.fire && now - flameSince >= FIRE_HOLD_MS) latchFire();
+      if (now - flameSince >= FIRE_HOLD_MS) {
+        if (!s.fire) {
+          latchFire();
+        } else if (s.silenced) {  // fire came back after a Teacher silence: sound the alarm again
+          saveFireState(true, false);
+          withState([](DeviceState &st) { st.silenced = false; });
+          logf("[STATUS] FIRE again after silence: alarm sounding again, door stays UNLOCKED");
+          emitEvent("FIRE", "flame held 2 s again after silence, alarm re-armed");
+        }
+      }
     } else {
       flameSince = 0;
     }
