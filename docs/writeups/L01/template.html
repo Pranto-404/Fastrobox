@@ -62,7 +62,7 @@
 <h2>2. Where it shows</h2>
 <table>
   <tr><th style="width:20%">Surface</th><th>What Level 1 shows</th></tr>
-  <tr><td>Serial Monitor (115200)</td><td><code>[STATUS]</code> every second in the fixed format · <code>[CARD] uid=…</code> once per tap · <code>[ERROR] SENSOR ERROR: …</code> and <code>…CLEARED</code> · <code>[EVENT] BOOT reason=…</code> · replies to <code>help status health tasks ver hang</code> (Fig. 3–7)</td></tr>
+  <tr><td>Serial Monitor (115200)</td><td><code>[STATUS]</code> every second in the fixed format · <code>[CARD] uid=…</code> once per tap · <code>[ERROR] SENSOR ERROR: …</code> and <code>…CLEARED</code> · <code>[EVENT] BOOT reason=…</code> · replies to <code>help status health tasks ver hang</code> (Fig. 3–5)</td></tr>
   <tr><td>Light and buzzer</td><td>Green 2 Hz heartbeat (250 ms on / 250 ms off); magenta 2 Hz while a sensor error lasts. The buzzer is not used in Level 1.</td></tr>
   <tr><td>Local status page · Web dashboard · Database</td><td>Not used in Level 1 (they start in Level 2, Level 4 and Level 2).</td></tr>
 </table>
@@ -70,9 +70,7 @@
 <pre>[STATUS] up=742s T=29.0C RH=64% HI=- flame=0 door=LOCKED state=SAFE trend=- rssi=- heap=290k psram=8000k chip=41.5C fw=1.0.0</pre>
 <div class="shots">
   <figure>$img_serial_status<figcaption>Fig. 3: <code>[STATUS]</code> every second (up=899 s → 905 s) and exactly one <code>[CARD]</code> line per tap (3 taps → 3 lines)</figcaption></figure>
-  <figure>$img_serial_health_tasks<figcaption>Fig. 4: <code>health</code> and <code>tasks</code> (both cores)</figcaption></figure>
-  <figure>$img_serial_watchdog<figcaption>Fig. 5: <code>hang</code> → restart → <code>BOOT reason=WATCHDOG</code>, door LOCKED</figcaption></figure>
-  <figure>$img_serial_sensor_error<figcaption>Fig. 6: DHT11 unplugged → <code>SENSOR ERROR: DHT11</code>; the card is still read during the error (no freeze); reconnected → <code>CLEARED</code></figcaption></figure>
+  <figure>$img_serial_sensor_error<figcaption>Fig. 4: DHT11 unplugged → <code>SENSOR ERROR: DHT11</code>; the card is still read during the error (no freeze); reconnected → <code>CLEARED</code></figcaption></figure>
 </div>
 
 <h2 class="pagebreak">3. Test results</h2>
@@ -83,20 +81,20 @@
   <tr><td class="c">2</td><td>Card tapped 3×, then held 5 s → <code>[CARD]</code> lines</td><td class="c">exactly 4</td><td class="c">$m_cards</td><td class="c">$v_cards</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">3</td><td><code>health</code> prints chip temp, heap, PSRAM, flash, CPU, RSSI, uptime, reset reason, fw</td><td class="c">all 9</td><td class="c">$m_health</td><td class="c">$v_health</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">4</td><td><code>tasks</code> lists each task with its core and free stack</td><td class="c">≥ 3, both cores</td><td class="c">$m_tasks</td><td class="c">$v_tasks</td><td class="c pass">PASS</td></tr>
-  <tr><td class="c">5</td><td><code>hang</code> → the board restarts by itself</td><td class="c">≤ 10 s</td><td class="c">$m_wdt_s s</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">5</td><td><code>hang</code> → the board restarts by itself</td><td class="c">≤ 10 s</td><td class="c">$m_wdt_s s)</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">6</td><td>Boot line after the watchdog restart</td><td class="c">WATCHDOG</td><td class="c">$m_boot_reason</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">7</td><td>Door state after the restart (no flame)</td><td class="c">LOCKED</td><td class="c">$m_door_after</td><td class="c">$v_wdt</td><td class="c pass">PASS</td></tr>
   <tr class="grp"><td colspan="6">Video item: DHT11 data wire and RC522 SDA wire unplugged</td></tr>
   <tr><td class="c">8</td><td>Both wires unplugged together</td><td class="c">≥ 15 s</td><td class="c">$m_unplug_s s</td><td class="c">$v_unplug</td><td class="c pass">PASS</td></tr>
-  <tr><td class="c">9</td><td><code>[ERROR] SENSOR ERROR: RFID</code> after unplugging</td><td class="c">≤ 3 s</td><td class="c">$m_rfid_err_s s</td><td class="c">$v_rfid_err</td><td class="c pass">PASS</td></tr>
-  <tr><td class="c">10</td><td><code>[ERROR] SENSOR ERROR: DHT11</code> after unplugging</td><td class="c">≤ 12 s</td><td class="c">$m_dht_err_s s</td><td class="c">$v_dht_err</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">9</td><td><code>[ERROR] SENSOR ERROR: RFID</code> after unplugging</td><td class="c">≤ 3 s</td><td class="c">$m_rfid_err_s</td><td class="c">$v_rfid_err</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">10</td><td><code>[ERROR] SENSOR ERROR: DHT11</code> after unplugging</td><td class="c">≤ 12 s</td><td class="c">$m_dht_err_s</td><td class="c">$v_dht_err</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">11</td><td>Light while the error lasts</td><td class="c">magenta</td><td class="c">$m_magenta</td><td class="c">$v_rfid_err</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">12</td><td>No freeze: <code>[STATUS]</code> continues and <code>status</code> is answered</td><td class="c">no freeze</td><td class="c">$m_nofreeze</td><td class="c">$v_nofreeze</td><td class="c pass">PASS</td></tr>
-  <tr><td class="c">13</td><td>Both errors clear after reconnecting (RFID / DHT11)</td><td class="c">automatic</td><td class="c">$m_rfid_clear_s s / $m_dht_clear_s s</td><td class="c">$v_clear</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">13</td><td>Both errors clear after reconnecting (RFID / DHT11)</td><td class="c">automatic</td><td class="c">$m_rfid_clear_s / $m_dht_clear_s</td><td class="c">$v_clear</td><td class="c pass">PASS</td></tr>
   <tr class="grp"><td colspan="6">Write-up items</td></tr>
   <tr><td class="c">14</td><td><code>[STATUS]</code> line every second in the fixed format (Fig. 3)</td><td class="c">1 s</td><td class="c">$m_status_interval</td><td class="c">–</td><td class="c pass">PASS</td></tr>
   <tr><td class="c">15</td><td>Read periods DHT11 / flame / RFID (<code>config.h</code>, <code>vTaskDelayUntil</code>)</td><td class="c">5 s / 100 ms / 200 ms</td><td class="c">5000 / 100 / 200 ms</td><td class="c">–</td><td class="c pass">PASS</td></tr>
-  <tr><td class="c">16</td><td>Flame present at start-up → door (Fig. 7)</td><td class="c">UNLOCKED</td><td class="c">$m_flame_start</td><td class="c">–</td><td class="c pass">PASS</td></tr>
+  <tr><td class="c">16</td><td>Flame present at start-up → door (Fig. 5)</td><td class="c">UNLOCKED</td><td class="c">$m_flame_start</td><td class="c">–</td><td class="c pass">PASS</td></tr>
 </table>
 
 <h2>4. Problems and fixes</h2>
@@ -130,7 +128,7 @@
       <tr><td>Flame</td><td class="c">100 ms</td><td>flame (1)</td></tr>
       <tr><td>RFID</td><td class="c">200 ms</td><td>rfid (0)</td></tr>
     </table>
-    <figure class="mini">$img_serial_flame_start<figcaption>Fig. 7: Flame at start-up → <code>door=UNLOCKED</code></figcaption></figure>
+    <figure class="mini">$img_serial_flame_start<figcaption>Fig. 5: Flame at start-up → <code>door=UNLOCKED</code></figcaption></figure>
   </div>
 </div>
 </body>
