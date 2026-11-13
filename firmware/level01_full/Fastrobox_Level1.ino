@@ -6,10 +6,12 @@
  * Real physical tests are mandatory: the sketch alone is NOT a Level 1 pass.
  * CAUTION: Verify EVERY wire against board & module SILKSCREEN before USB power.
  * This pin map matches the user's current wiring EXCEPT two required moves:
+ * RC522 SDA GPIO2 -> GPIO41 (GPIO2 reserved for future buzzer),
  * RC522 MOSI GPIO48 -> GPIO39 (GPIO48 belongs to on-board RGB LED),
  * RC522 RST GPIO3 -> GPIO42 (GPIO3 is an ESP32-S3 strapping pin).
- * Other RC522 wires remain on GPIO2(SDA),47(SCK),21(MISO).
- * GPIO2 may also drive the on-board auxiliary status LED; verify SPI reliability.
+ * Other RC522 wires stay GPIO47(SCK), GPIO21(MISO).
+ * DHT11 uses GPIO14, flame uses GPIO38; reserve GPIO1 for capacitive panic pad
+ * and GPIO2 for active buzzer in later Level 3 (check buzzer current rating).
  * This pin map preserves camera pins and assumes no microSD is installed.
  *
  * Arduino IDE / esp32 by Espressif Systems (3.x recommended):
@@ -37,9 +39,9 @@
 #define PIN_RFID_SCK    47
 #define PIN_RFID_MISO   21
 #define PIN_RFID_MOSI   39
-#define PIN_RFID_SS     2     // RC522 pin marked SDA / SS; GPIO2 may share on-board status LED
+#define PIN_RFID_SS     41    // RC522 SDA/SS
 #define PIN_RFID_RST    42
-#define PIN_DHT         1
+#define PIN_DHT         14
 #define PIN_FLAME       38    // IR module DO; no microSD card
 #define PIN_RGB         48
 #define FLAME_ACTIVE_LOW 1     // change to 0 only if your flame module requires it
@@ -326,7 +328,7 @@ void setup() {
   printLocked("[TEST] Team=07 board=ESP32-S3-CAM firmware=" + String(FW_VERSION));
   printLocked("[TEST] Startup flame=" + String(flameActive ? 1 : 0) +
               " door=" + String(doorUnlocked ? "UNLOCKED" : "LOCKED"));
-  printLocked("[TEST] RFID CS=2 SCK=47 MISO=21 MOSI=39 RST=42; DHT=1 FLAME=38 RGB=48");
+  printLocked("[TEST] RFID CS=41 SCK=47 MISO=21 MOSI=39 RST=42; DHT=14 FLAME=38 RGB=48");
 
   led.begin(); led.setBrightness(55); led.clear(); led.show();
 #if ESP_IDF_VERSION_MAJOR >= 5
