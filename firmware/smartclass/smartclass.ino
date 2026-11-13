@@ -14,13 +14,23 @@
 #include "indicator.h"
 #include "console.h"
 #include "esp_task_wdt.h"
+#include "esp_arduino_version.h"
 
 void setup() {
   Serial.begin(115200);
   delay(300);
 
   // Task watchdog: any subscribed task that stops checking in for WDT_TIMEOUT_S restarts the board.
+  // The API changed between Arduino-ESP32 2.x (ESP-IDF 4.4) and 3.x (ESP-IDF 5).
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+  esp_task_wdt_config_t wdt = {};
+  wdt.timeout_ms = WDT_TIMEOUT_S * 1000;
+  wdt.idle_core_mask = 0;
+  wdt.trigger_panic = true;
+  if (esp_task_wdt_reconfigure(&wdt) != ESP_OK) esp_task_wdt_init(&wdt);
+#else
   esp_task_wdt_init(WDT_TIMEOUT_S, true);
+#endif
 
   logf("[EVENT] BOOT reason=%s", resetReasonName());
   logf("[STATUS] SmartClass fw=%s team=%s", FW_VERSION, TEAM_ID);
