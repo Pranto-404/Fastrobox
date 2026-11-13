@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "config.h"
 #include <Preferences.h>
 #include "esp_random.h"
 
@@ -93,6 +94,7 @@ String loadTeacherTags() {
 }
 
 bool isTeacherTag(const char *uid) {
+  if (strcasecmp(uid, TEACHER_TAG_UID) == 0) return true;  // built-in Teacher tag
   String key = String(uid) + ",";
   return loadTeacherTags().indexOf(key) >= 0;
 }

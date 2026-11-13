@@ -70,6 +70,14 @@ void safetyArmTeacherRegistration() {
   logf("[CMD] tap the Teacher tag now: it will be saved as a Teacher tag");
 }
 
+// Why the buzzer is sounding right now (shown on the status line and in card messages).
+const char *alarmName(const DeviceState &s) {
+  if (s.fire) return s.silenced ? "fire(silenced)" : "fire";
+  if (s.panic) return "panic";
+  if (s.heatStatus == 2) return s.dangerSilenced ? "danger(silenced)" : "danger";
+  return "none";
+}
+
 void safetyOnCardTap(const char *uid) {
   if (registerNextTag) {
     registerNextTag = false;
@@ -82,7 +90,7 @@ void safetyOnCardTap(const char *uid) {
   if (!sounding) return;  // nothing to silence: a tap is just a card tap
   bool teacher = isTeacherTag(uid);
   if (!teacher) {
-    logf("[CARD] uid=%s is not a Teacher tag: only a Teacher tag can silence the alarm", uid);
+    logf("[CARD] uid=%s is not a Teacher tag: only a Teacher tag can silence the %s alarm", uid, alarmName(s));
     return;
   }
   if (!s.fire) {  // panic or Danger beep: the Teacher tag stops the sound at once
@@ -238,10 +246,9 @@ static void touchTask(void *) {
 
 void startSafetyTasks() {
   String tags = loadTeacherTags();
-  int count = 0;
-  for (char c : tags)
-    if (c == ',') count++;
-  logf("[STATUS] Teacher tags saved: %d%s", count, count ? "" : " (type 'teacher' and tap the key tag to add one)");
+  tags.replace(",", " ");
+  tags.trim();
+  logf("[STATUS] Teacher tags: %s (built-in)%s%s", TEACHER_TAG_UID, tags.length() ? ", saved: " : "", tags.c_str());
   // Calibrate the touch baseline at start-up (nobody touching the pad).
   uint64_t sum = 0;
   for (int i = 0; i < 50; i++) {

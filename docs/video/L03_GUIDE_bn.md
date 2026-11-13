@@ -25,7 +25,7 @@
 ## Part B: Prothombar ekbar koro
 
 1. `smartclass_L3.zip` upload koro. **Upload ar start-up er somoy touch wire dhorbe na.**
-2. Serial e likho **`teacher`**, tarpor **key tag** (`216DE766`) tap koro → `saved as Teacher tag`. Ekbar korlei hoy, flash e thake.
+2. **Teacher tag = card `4113050A`** (firmware e built-in, kichu korte hobe na). Student card = key tag `216DE766`. Start-up e `[STATUS] Teacher tags: 4113050A (built-in)` dekhabe.
 3. **Touch check:** wire na dhore likho `touch`, tarpor wire dhore abar `touch`.
    - Dhorle **ratio > 1.25** hote hobe.
    - Na hole amake dui bar er number pathao, threshold bodle dibo.
@@ -39,9 +39,9 @@
 | # | Ki korbe | ✅ Pass |
 |---|---|---|
 | 1 | Moombati/lighter 30 cm dure **≥ 3 s** | ~2 s e `[EVENT] FIRE …`, buzzer cholte thake, lal **fast** blink, `door=UNLOCKED`, `state=FIRE`; records e `FIRE` **3 s er moddhe** |
-| 2 | Flame **thaka obosthay** key tag tap | `CANNOT SILENCE - FLAME PRESENT` (Serial + local page), buzzer **cholte thake** |
-| 3 | Flame nibhao, **student card** (`4113050A`) tap | `not a Teacher tag`, buzzer cholte thake |
-| 4 | **Key tag** tap | `[EVENT] SILENCED …`, buzzer bondho, **door UNLOCKED e thake**, LED lal blink cholte thake |
+| 2 | Flame **thaka obosthay** Teacher card (`4113050A`) tap | `CANNOT SILENCE - FLAME PRESENT` (Serial + local page), buzzer **cholte thake** |
+| 3 | Flame nibhao, **student key tag** (`216DE766`) tap | `not a Teacher tag`, buzzer cholte thake |
+| 4 | **Teacher card** (`4113050A`) tap | `[EVENT] SILENCED …`, buzzer bondho, **door UNLOCKED e thake**, LED lal blink cholte thake |
 
 ### A6: Power cut during fire + Reset fire
 | # | Ki korbe | ✅ Pass |

@@ -13,10 +13,10 @@ void printStatusLine() {
   char rssi[8] = "-", hi[12] = "-";
   if (s.wifiConnected) snprintf(rssi, sizeof(rssi), "%d", s.rssi);
   if (s.hiValid) snprintf(hi, sizeof(hi), "%.1fC", s.heatIndex);
-  logf("[STATUS] up=%lus T=%s RH=%s HI=%s flame=%d door=%s state=%s trend=%s rssi=%s heap=%luk psram=%luk "
+  logf("[STATUS] up=%lus T=%s RH=%s HI=%s flame=%d door=%s state=%s alarm=%s trend=%s rssi=%s heap=%luk psram=%luk "
        "chip=%.1fC fw=%s",
        (unsigned long)uptimeSeconds(), t, rh, hi, s.flame ? 1 : 0, s.doorUnlocked ? "UNLOCKED" : "LOCKED",
-       overallStatus(s), trendName(s), rssi,
+       overallStatus(s), alarmName(s), trendName(s), rssi,
        (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getFreePsram() / 1024), s.chipTempC,
        FW_VERSION);
 }

@@ -66,6 +66,8 @@
 #define TREND_READINGS       10     // trend from the last 10 temperature readings
 #define TREND_SLOPE_C        0.05f  // C per reading (~0.6 C/min) for Rising / Falling
 #define FLAME_GAP_MS         300    // a candle flickers: gaps shorter than this still count as "continuous"
+// Card that is always a Teacher tag (a card number, not a secret). More can be added with the `teacher` command.
+#define TEACHER_TAG_UID      "4113050A"
 #define FLAME_RECENT_MS      1500   // flame seen this recently = "flame present" for silence / reset
 #define TOUCH_GAP_MS         150    // same idea for the touch pad
 #define COMMAND_POLL_MS      1000   // ask the server for commands (Reset fire, ...) every second
