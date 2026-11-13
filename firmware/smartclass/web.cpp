@@ -20,9 +20,14 @@ static void writeFile(const char *path, const char *content) {
 
 // Copy the built-in pages into LittleFS once per page version.
 static void installPages() {
-  if (!LittleFS.begin(true)) {
-    logf("[ERROR] LittleFS mount failed");
-    return;
+  if (!LittleFS.begin(false)) {
+    // First start on a new partition table: formatting ~8 MB takes up to a minute (only once).
+    logf("[STATUS] preparing the flash file system (first start only, may take up to 60 s)...");
+    if (!LittleFS.format() || !LittleFS.begin(false)) {
+      logf("[ERROR] LittleFS mount failed: check that partitions.csv is in the sketch folder");
+      return;
+    }
+    logf("[STATUS] flash file system ready");
   }
   File v = LittleFS.open("/version.txt", "r");
   String have = v ? v.readString() : "";
@@ -116,8 +121,8 @@ static void handleSave() {
 }
 
 static void webTask(void *) {
+  installPages();          // may format the file system once: done before joining the watchdog
   esp_task_wdt_add(NULL);
-  installPages();
   server.on("/", HTTP_GET, [] { sendFile(fromSetupNetwork() && stateSnapshot().setupMode ? "/setup.html" : "/index.html"); });
   server.on("/setup", HTTP_GET, [] { sendFile("/setup.html"); });
   server.on("/status", HTTP_GET, [] { sendFile("/index.html"); });
