@@ -54,3 +54,6 @@ smartclass_L1.zip
 docs/writeups/*/build/
 L01_writeup_DRAFT.pdf
 T07_L01_writeup.pdf
+
+# Sketch zips handed to the team (built from firmware/smartclass)
+smartclass_L*.zip
