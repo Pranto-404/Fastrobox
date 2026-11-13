@@ -21,8 +21,8 @@ from pydantic import BaseModel
 from . import db
 from .pages import RECORDS_PAGE, HOME_PAGE
 
-OFFLINE_AFTER_S = 20  # device sends every 5 s; silent for 20 s -> offline (limit 30 s)
-MONITOR_PERIOD_S = 5
+OFFLINE_AFTER_S = 12  # device sends every 5 s: 2 missed readings -> offline; worst case ~19 s (limit 30 s)
+MONITOR_PERIOD_S = 2
 
 
 def _load_tokens() -> dict:

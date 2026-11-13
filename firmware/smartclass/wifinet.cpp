@@ -56,9 +56,14 @@ static void setNetState(bool setup, bool connected) {
   });
 }
 
+// Full transmit power (20 dBm) draws current spikes that brown out the board on a weak USB supply.
+// 15 dBm still gives about -50 dBm at the hotspot and keeps the supply stable.
+static void limitTxPower() { WiFi.setTxPower(WIFI_POWER_15dBm); }
+
 static void startAP() {
   if (apOn) return;
   WiFi.mode(WIFI_AP_STA);
+  limitTxPower();
   char ssid[32];
   snprintf(ssid, sizeof(ssid), "SmartClass-%s", TEAM_ID);
   WiFi.softAP(ssid, apPassword());
@@ -73,6 +78,7 @@ static void stopAP() {
   if (!apOn) return;
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
+  limitTxPower();
   apOn = false;
   logf("[NET] setup access point off");
 }
@@ -183,6 +189,7 @@ static void wifiTask(void *) {
     startAP();
   } else {
     WiFi.mode(WIFI_STA);
+    limitTxPower();
     beginConnect(cfg);
     tryStart = millis();
     mode = cfg.verified ? RECONNECTING : TRYING;
