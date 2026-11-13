@@ -38,6 +38,7 @@ struct DeviceState {
   bool fire = false;           // fire latched (kept in flash)
   bool silenced = false;
   bool panic = false;          // panic alarm sounding
+  bool dangerSilenced = false; // Teacher tag stopped the Danger beep (until the status leaves Danger)
   uint32_t touchBaseline = 0;
   char notice[48] = "";        // short message for the local page, e.g. CANNOT SILENCE
   uint32_t noticeUntil = 0;

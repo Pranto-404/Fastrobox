@@ -31,7 +31,7 @@ static void signals(const DeviceState &s, uint32_t t, Rgb &led, bool &buzz) {
     buzz = (t % 200) < 100;
   } else if (s.heatStatus == 2) {
     led = beat ? RED : OFF;
-    buzz = (t % 2000) < 120;
+    buzz = !s.dangerSilenced && (t % 2000) < 120;
   } else if (s.dhtError || s.rfidError) {
     led = beat ? MAGENTA : OFF;
   } else if (s.heatStatus == 1) {

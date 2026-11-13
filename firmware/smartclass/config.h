@@ -44,7 +44,8 @@
 #define DEVICE_NUMBER        "D1"     // device_id = TEAM_ID-D1, e.g. T07-D1
 #define TZ_DHAKA             "<+06>-6" // Asia/Dhaka, UTC+6, no daylight saving
 #define TELEMETRY_PERIOD_MS  5000   // telemetry every 5 s (+/- 1 s allowed)
-#define SETUP_TRY_MS         12000  // new Wi-Fi details: give up after 12 s -> back to setup (limit 15 s)
+#define SETUP_TRY_MS         13000  // new Wi-Fi details: up to 3 tries in 13 s, then back to setup (limit 15 s)
+#define SETUP_MAX_TRIES      3      // phone hotspots often refuse the very first handshake
 #define RECONNECT_MAX_GAP_MS 8000   // saved Wi-Fi: retry gaps 1, 2, 4, 8, 8 ... s (reconnects well within 30 s)
 #define BOOT_HOLD_MS         5000   // hold BOOT 5 s -> clear Wi-Fi details
 #define LIVE_TIMEOUT_MS      15000  // no successful server reply for 15 s -> OFFLINE

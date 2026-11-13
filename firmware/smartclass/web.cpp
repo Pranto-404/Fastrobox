@@ -5,10 +5,12 @@
 #include "webfiles.h"
 #include <WiFi.h>
 #include <WebServer.h>
+#include <DNSServer.h>
 #include <LittleFS.h>
 #include "esp_task_wdt.h"
 
 static WebServer server(80);
+static DNSServer dns;  // setup mode: every name points at 192.168.4.1, so phones open the setup page by themselves
 
 static void writeFile(const char *path, const char *content) {
   File f = LittleFS.open(path, "w");
@@ -146,7 +148,16 @@ static void webTask(void *) {
     server.send(302, "text/plain", "");
   });
   server.begin();
+  bool dnsOn = false;
   for (;;) {
+    bool apOn = WiFi.getMode() & WIFI_MODE_AP;
+    if (apOn && !dnsOn) {
+      dnsOn = dns.start(53, "*", WiFi.softAPIP());
+    } else if (!apOn && dnsOn) {
+      dns.stop();
+      dnsOn = false;
+    }
+    if (dnsOn) dns.processNextRequest();
     server.handleClient();
     esp_task_wdt_reset();
     vTaskDelay(pdMS_TO_TICKS(5));

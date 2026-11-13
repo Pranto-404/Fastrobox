@@ -78,10 +78,21 @@ void safetyOnCardTap(const char *uid) {
     return;
   }
   DeviceState s = stateSnapshot();
-  if (!s.fire) return;
+  bool sounding = s.fire || s.panic || (s.heatStatus == 2 && !s.dangerSilenced);
+  if (!sounding) return;  // nothing to silence: a tap is just a card tap
   bool teacher = isTeacherTag(uid);
   if (!teacher) {
-    logf("[CARD] uid=%s is not a Teacher tag: cannot silence the fire alarm", uid);
+    logf("[CARD] uid=%s is not a Teacher tag: only a Teacher tag can silence the alarm", uid);
+    return;
+  }
+  if (!s.fire) {  // panic or Danger beep: the Teacher tag stops the sound at once
+    char detail[48];
+    snprintf(detail, sizeof(detail), "%s alarm, teacher tag %s", s.panic ? "panic" : "danger", uid);
+    withState([](DeviceState &st) {
+      if (st.panic) st.panic = false;
+      else st.dangerSilenced = true;
+    });
+    emitEvent("SILENCED", detail);
     return;
   }
   if (flameRecently(s, FLAME_RECENT_MS)) {
@@ -168,7 +179,10 @@ static void safetyTask(void *) {
         candidate = want;
         candidateSince = now;
       } else if (now - candidateSince >= STATUS_HOLD_MS) {
-        withState([&](DeviceState &st) { st.heatStatus = want; });
+        withState([&](DeviceState &st) {
+          st.heatStatus = want;
+          if (want != 2) st.dangerSilenced = false;  // a new Danger beeps again
+        });
         char detail[24];
         snprintf(detail, sizeof(detail), "%s->%s", heatStatusName(cur), heatStatusName(want));
         emitEvent("STATUS", detail);
@@ -223,6 +237,11 @@ static void touchTask(void *) {
 }
 
 void startSafetyTasks() {
+  String tags = loadTeacherTags();
+  int count = 0;
+  for (char c : tags)
+    if (c == ',') count++;
+  logf("[STATUS] Teacher tags saved: %d%s", count, count ? "" : " (type 'teacher' and tap the key tag to add one)");
   // Calibrate the touch baseline at start-up (nobody touching the pad).
   uint64_t sum = 0;
   for (int i = 0; i < 50; i++) {

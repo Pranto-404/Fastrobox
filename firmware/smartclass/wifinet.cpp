@@ -29,8 +29,8 @@ static const char *reasonText(uint8_t r) {
     case WIFI_REASON_NO_AP_FOUND: return "network not found";
     case WIFI_REASON_AUTH_FAIL:
     case WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT:
-    case WIFI_REASON_HANDSHAKE_TIMEOUT:
-    case WIFI_REASON_AUTH_EXPIRE: return "wrong password";
+    case WIFI_REASON_HANDSHAKE_TIMEOUT: return "wrong password";
+    case WIFI_REASON_AUTH_EXPIRE: return "hotspot did not accept the board (check WPA2 / 2.4 GHz)";
     case WIFI_REASON_CONNECTION_FAIL: return "connection failed";
     default: return "disconnected";
   }
@@ -61,7 +61,11 @@ static void setNetState(bool setup, bool connected) {
 
 // Full transmit power (20 dBm) draws current spikes that brown out the board on a weak USB supply.
 // 15 dBm still gives about -50 dBm at the hotspot and keeps the supply stable.
-static void limitTxPower() { WiFi.setTxPower(WIFI_POWER_15dBm); }
+// Modem sleep makes phone hotspots drop the board now and then: keep the radio awake.
+static void limitTxPower() {
+  WiFi.setTxPower(WIFI_POWER_15dBm);
+  WiFi.setSleep(false);
+}
 
 static void startAP() {
   if (apOn) return;
@@ -95,6 +99,12 @@ static void startMdnsAndTime() {
 }
 
 static void beginConnect(const NetConfig &c) {
+  // A network scan still running (setup page list) makes the join fail with a handshake timeout.
+  for (int i = 0; i < 40 && WiFi.scanComplete() == WIFI_SCAN_RUNNING; i++) {
+    esp_task_wdt_reset();
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+  WiFi.scanDelete();
   evGotIp = evDisconnected = false;
   WiFi.disconnect(false, false);
   WiFi.begin(c.ssid.c_str(), c.pass.c_str());
@@ -245,6 +255,10 @@ static void wifiTask(void *) {
           saveNetConfig(cfg);
           onConnected(false);
           if (apOn) apOffAt = now + 8000;  // leave the setup page up briefly so it can show the new address
+        } else if (evDisconnected && fatalReason(evReason) && attempts < SETUP_MAX_TRIES &&
+                   now - tryStart < SETUP_TRY_MS - 3000) {
+          logf("[NET] join failed (%s, reason %d), trying again", reasonText(evReason), evReason);
+          beginConnect(cfg);  // same details again: the first handshake with a phone often fails
         } else if ((evDisconnected && fatalReason(evReason)) || now - tryStart > SETUP_TRY_MS) {
           const char *why = evDisconnected ? reasonText(evReason) : "no answer from the network";
           xSemaphoreTake(mtx, portMAX_DELAY);
