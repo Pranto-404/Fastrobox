@@ -5,6 +5,7 @@ Reference values for testing only. **The firmware never hard-codes these**: card
 | Item | Value | Notes |
 |---|---|---|
 | Board | ESP32-S3-N16R8, OV3660 camera | 16 MB flash, 8 MB OPI PSRAM |
+| Team | T07, "Kemon_dilam_Bondhura" |
 | Serial port | COM5 on the team laptop (USB-UART port) | USB CDC On Boot = Disabled |
 | RC522 version register | `0x82` (clone chip) | Firmware accepts the version read at boot; 0x00/0xFF = wiring fault |
 | Kit card | UID `4113050A` (MIFARE 1KB) | Student card in tests |

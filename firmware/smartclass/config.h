@@ -7,7 +7,7 @@
 #endif
 
 #ifndef TEAM_ID
-#define TEAM_ID "T00"  // set the real Team ID with -DTEAM_ID="T07" (PlatformIO) or edit here
+#define TEAM_ID "T07"  // our hackathon Team ID (team "Kemon_dilam_Bondhura"); override with -DTEAM_ID=\"Txx\"
 #endif
 
 // ---- Pins (see docs/WIRING.md) ----

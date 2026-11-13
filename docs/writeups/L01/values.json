@@ -1,6 +1,6 @@
 {
   "_help": "Fill the empty strings with what you measured, then run: python3 tools/writeup/build.py L01. Empty values print as a yellow ____ so nothing is forgotten. Screenshots go in docs/writeups/L01/screens/ with the file names listed under 'screens'.",
-  "team_id": "",
+  "team_id": "T07",
   "date": "2026-11-13",
   "git_tag": "level-01",
   "commit": "a4491f6",
