@@ -28,6 +28,8 @@ RECORDS_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
  <div class="card"><div class="muted">Telemetry rows</div><div class="big" id="ct">-</div></div>
  <div class="card"><div class="muted">Event rows</div><div class="big" id="ce">-</div></div>
  <div class="card" id="devs"></div>
+ <div class="card"><button id="rp" onclick="replay()" style="padding:8px 12px;font-weight:700;border:0;border-radius:6px;background:#1f3a5f;color:#fff;cursor:pointer">Replay test: resend newest message</button>
+ <div id="rpo" class="muted" style="margin-top:6px;max-width:420px;white-space:normal"></div></div>
 </div>
 <h2>Telemetry (newest first; &Delta;ts = seconds since the previous reading)</h2>
 <div class="scroll"><table id="tt"></table></div>
@@ -64,6 +66,13 @@ async function load(){
       ['room',x=>x.room_id],['type',x=>'<b>'+x.type+'</b>'],['detail',x=>x.detail]], d.events);
     table(document.getElementById('ts'), [['time (Dhaka)',x=>dhaka(x.at)],['device',x=>x.device_id],['state',x=>x.state]], d.status_log);
   }catch(e){}
+}
+async function replay(){
+  const o=document.getElementById('rpo'); o.textContent='sending...';
+  try{const r=await fetch('/api/replay-test',{method:'POST'}); const d=await r.json();
+    o.innerHTML='Resent seq <b>'+d.resent_seq+'</b> → server answered <b style="color:'+(d.status==409?'#c62828':'#111')+'">'+d.status+
+      '</b> '+d.server_reply+'<br>Rows with this seq: <b>'+d.rows_with_this_seq+'</b> · telemetry rows before '+d.telemetry_rows_before+', after '+d.telemetry_rows_after;
+  }catch(e){o.textContent='error: '+e}
 }
 load(); setInterval(load, 1000);
 </script></body></html>"""

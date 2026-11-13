@@ -10,7 +10,10 @@ import asyncio
 import contextlib
 import hmac
 import os
+import json
 import time
+import urllib.error
+import urllib.request
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException
@@ -208,6 +211,37 @@ def api_records(_: str = Depends(check_admin)):
                 "SELECT device_id, state, EXTRACT(EPOCH FROM at)::bigint AS at FROM device_status_log ORDER BY id DESC LIMIT 10"
             ).fetchall(),
         }
+
+
+@app.post("/api/replay-test")
+def replay_test(_: str = Depends(check_admin)):
+    """Judges' replay check: send the newest stored telemetry message again, unchanged (same seq),
+    through the normal HTTPS ingest endpoint with the device token, and show that it is rejected."""
+    with db.pool.connection() as conn:
+        row = conn.execute("SELECT * FROM telemetry ORDER BY id DESC LIMIT 1").fetchone()
+        if not row:
+            raise HTTPException(404, "no telemetry stored yet")
+        before = conn.execute("SELECT count(*) AS n FROM telemetry").fetchone()["n"]
+    message = {k: row[k] for k in Telemetry.model_fields}
+    token = DEVICE_TOKENS.get(row["device_id"], "")
+    req = urllib.request.Request(
+        f"http://127.0.0.1:{os.environ.get('PORT', '8000')}/api/v1/telemetry",
+        data=json.dumps(message).encode(),
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {token}"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            status, body = r.status, r.read().decode()
+    except urllib.error.HTTPError as e:
+        status, body = e.code, e.read().decode()
+    with db.pool.connection() as conn:
+        after = conn.execute("SELECT count(*) AS n FROM telemetry").fetchone()["n"]
+        same = conn.execute(
+            "SELECT count(*) AS n FROM telemetry WHERE device_id = %s AND seq = %s", (row["device_id"], row["seq"])
+        ).fetchone()["n"]
+    return {"resent_seq": row["seq"], "status": status, "server_reply": body, "rows_with_this_seq": same,
+            "telemetry_rows_before": before, "telemetry_rows_after": after, "message": message}
 
 
 @app.get("/records", response_class=HTMLResponse)
