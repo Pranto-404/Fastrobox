@@ -14,7 +14,7 @@
 | Trend | Last 10 reading er slope. ≥ +0.05 °C/reading = RISING, ≤ −0.05 = FALLING. LED/buzzer/door bodlay na. | `trend=`, local page |
 | FIRE | Flame **2 s continuous** (300 ms er kom flicker gap o "continuous") → **sathe sathe** FIRE: flash e save, door **UNLOCKED**, 5 Hz lal, buzzer cholte thake, `FIRE` event | Serial, LED, local page "FIRE – EVACUATE", records |
 | Power cut e fire | Fire latch flash e thake → restart e door **UNLOCKED** | |
-| Silence | Sudhu **Teacher tag**, ar sudhu flame jaoar **1.5 s por**. Student card kokhono na. Door UNLOCKED e thake. | `SILENCED` event; flame thakle local page e "CANNOT SILENCE – FLAME PRESENT" |
+| Silence | Sudhu **Teacher tag**. Student card kokhono na.<br>• **Fire:** flame jaoar **1.5 s por**, door UNLOCKED e thake.<br>• **Panic / Danger beep:** Teacher tag tap korlei sathe sathe bondho (Danger e LED lal e thake; notun Danger hole abar beep). | `SILENCED` event; flame thakle local page e "CANNOT SILENCE – FLAME PRESENT" |
 | Reset fire | Records page e **Reset fire** button (pore Level 4 dashboard) → `FIRE_CLEARED`, door LOCKED | |
 | Panic | Touch wire **2 s** → PANIC (lal/blue, 100/100 ms buzzer 10 s, `PANIC` event). < 1 s e kichu hoy na. Baseline start-up e mapa hoy. | Serial `touch-pad baseline=…`, local page PANIC |
 
