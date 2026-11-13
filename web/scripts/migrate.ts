@@ -8,7 +8,9 @@ import path from "node:path";
 import postgres from "postgres";
 
 export async function migrate(databaseUrl: string, opts: { reset?: boolean; quiet?: boolean } = {}) {
-  const sql = postgres(databaseUrl, { max: 1, onnotice: () => {} });
+  const u = new URL(databaseUrl);
+  u.searchParams.delete("channel_binding"); // libpq-only option
+  const sql = postgres(u.toString(), { max: 1, onnotice: () => {} });
   const dir = path.resolve(__dirname, "../../supabase/migrations");
   try {
     if (opts.reset) {

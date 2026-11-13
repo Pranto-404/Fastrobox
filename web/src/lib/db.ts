@@ -12,9 +12,23 @@ const globalForDb = globalThis as unknown as { __frxSql?: Sql };
  * Shared Postgres client (server-side only). `prepare: false` keeps it compatible
  * with the Supabase transaction-mode connection pooler.
  */
+/**
+ * Removes libpq-only URL options that postgres.js would otherwise forward to the
+ * server as runtime parameters (Neon/Vercel URLs include channel_binding).
+ */
+export function cleanDatabaseUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    u.searchParams.delete("channel_binding");
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 export function db(): Sql {
   if (!globalForDb.__frxSql) {
-    globalForDb.__frxSql = postgres(config().DATABASE_URL, {
+    globalForDb.__frxSql = postgres(cleanDatabaseUrl(config().DATABASE_URL), {
       max: Number(process.env.DB_POOL_MAX ?? 5),
       prepare: false,
       idle_timeout: 20,
