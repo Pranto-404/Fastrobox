@@ -5,6 +5,11 @@
  * L1 hardware: onboard RGB, DHT11, RC522 RFID, IR flame sensor.
  * Real physical tests are mandatory: the sketch alone is NOT a Level 1 pass.
  * CAUTION: Verify EVERY wire against board & module SILKSCREEN before USB power.
+ * This pin map matches the user's current wiring EXCEPT two required moves:
+ * RC522 MOSI GPIO48 -> GPIO39 (GPIO48 belongs to on-board RGB LED),
+ * RC522 RST GPIO3 -> GPIO42 (GPIO3 is an ESP32-S3 strapping pin).
+ * Other RC522 wires remain on GPIO2(SDA),47(SCK),21(MISO).
+ * GPIO2 may also drive the on-board auxiliary status LED; verify SPI reliability.
  * This pin map preserves camera pins and assumes no microSD is installed.
  *
  * Arduino IDE / esp32 by Espressif Systems (3.x recommended):
@@ -29,13 +34,13 @@
 // GPIO38-40 also connect to on-board SD socket: do not insert an SD card.
 // GPIO4-13,15-18: camera, GPIO48: RGB, GPIO19/20: USB,
 // GPIO35-37: OPI PSRAM. Do not reuse those pins.
-#define PIN_RFID_SCK    40
-#define PIN_RFID_MISO   38
+#define PIN_RFID_SCK    47
+#define PIN_RFID_MISO   21
 #define PIN_RFID_MOSI   39
-#define PIN_RFID_SS     41    // RC522 pin marked SDA / SS
+#define PIN_RFID_SS     2     // RC522 pin marked SDA / SS; GPIO2 may share on-board status LED
 #define PIN_RFID_RST    42
 #define PIN_DHT         1
-#define PIN_FLAME       21    // IR module DO
+#define PIN_FLAME       38    // IR module DO; no microSD card
 #define PIN_RGB         48
 #define FLAME_ACTIVE_LOW 1     // change to 0 only if your flame module requires it
 
@@ -321,7 +326,7 @@ void setup() {
   printLocked("[TEST] Team=07 board=ESP32-S3-CAM firmware=" + String(FW_VERSION));
   printLocked("[TEST] Startup flame=" + String(flameActive ? 1 : 0) +
               " door=" + String(doorUnlocked ? "UNLOCKED" : "LOCKED"));
-  printLocked("[TEST] RFID CS=41 SCK=40 MISO=38 MOSI=39 RST=42; DHT=1 FLAME=21 RGB=48");
+  printLocked("[TEST] RFID CS=2 SCK=47 MISO=21 MOSI=39 RST=42; DHT=1 FLAME=38 RGB=48");
 
   led.begin(); led.setBrightness(55); led.clear(); led.show();
 #if ESP_IDF_VERSION_MAJOR >= 5
