@@ -242,6 +242,15 @@ def api_records(_: str = Depends(check_admin)):
                 "SELECT (SELECT count(*) FROM telemetry) AS telemetry, (SELECT count(*) FROM events) AS events"
             ).fetchone(),
             "telemetry": conn.execute("SELECT * FROM telemetry ORDER BY id DESC LIMIT 20").fetchall(),
+            # Room status = newest reading + the safety events that matter right now.
+            "room": conn.execute(
+                """SELECT t.*, (SELECT detail FROM events e WHERE e.device_id = t.device_id AND e.type = 'CARD_TAP'
+                                ORDER BY e.ts DESC LIMIT 1) AS last_card,
+                          (SELECT max(ts) FROM events e WHERE e.device_id = t.device_id AND e.type = 'PANIC') AS last_panic,
+                          (SELECT max(ts) FROM events e WHERE e.device_id = t.device_id AND e.type = 'FIRE') AS last_fire,
+                          (SELECT max(ts) FROM events e WHERE e.device_id = t.device_id AND e.type = 'SILENCED') AS last_silenced
+                   FROM telemetry t ORDER BY t.ts DESC, t.id DESC LIMIT 1"""
+            ).fetchone(),
             "events": conn.execute("SELECT * FROM events ORDER BY id DESC LIMIT 15").fetchall(),
             "status_log": conn.execute(
                 "SELECT device_id, state, EXTRACT(EPOCH FROM at)::bigint AS at FROM device_status_log ORDER BY id DESC LIMIT 10"
