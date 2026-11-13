@@ -248,7 +248,8 @@ static void wifiTask(void *) {
         } else if ((evDisconnected && fatalReason(evReason)) || now - tryStart > SETUP_TRY_MS) {
           const char *why = evDisconnected ? reasonText(evReason) : "no answer from the network";
           xSemaphoreTake(mtx, portMAX_DELAY);
-          setupError = String("Could not join \"") + cfg.ssid + "\": " + why;
+          setupError = String("Could not join \"") + cfg.ssid + "\": " + why +
+                       (evDisconnected ? String(" (reason ") + evReason + ")" : String(""));
           xSemaphoreGive(mtx);
           logf("[NET] setup error: %s", setupError.c_str());
           WiFi.disconnect(false, false);
