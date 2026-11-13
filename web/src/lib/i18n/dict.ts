@@ -270,6 +270,19 @@ export const en = {
   "assistant.range": "Time range",
   "assistant.sources": "Sources",
   "assistant.hint": "Answers are computed only from stored records. Unknown dates get “no data”.",
+  "ota.upload": "Upload firmware",
+  "ota.version": "Version",
+  "ota.file": "Firmware file (.bin)",
+  "ota.notes": "Notes",
+  "ota.deploy": "Send to device",
+  "ota.check": "Server image check",
+  "ota.checkOk": "Image structure OK",
+  "ota.releases": "Firmware files",
+  "ota.jobs": "Update jobs",
+  "ota.progress": "Progress",
+  "ota.installed": "Installed version",
+  "ota.candidate": "Candidate version",
+  "ota.damagedNote": "Failed the server check: the device is expected to reject it (OTA_REJECTED).",
 } as const;
 
 export type DictKey = keyof typeof en;
@@ -541,6 +554,19 @@ export const bn: Record<DictKey, string> = {
   "assistant.range": "সময়সীমা",
   "assistant.sources": "উৎস",
   "assistant.hint": "উত্তর শুধু সংরক্ষিত রেকর্ড থেকে হিসাব করা হয়। তথ্য না থাকলে “কোনো তথ্য নেই” বলা হয়।",
+  "ota.upload": "ফার্মওয়্যার আপলোড",
+  "ota.version": "সংস্করণ",
+  "ota.file": "ফার্মওয়্যার ফাইল (.bin)",
+  "ota.notes": "মন্তব্য",
+  "ota.deploy": "ডিভাইসে পাঠান",
+  "ota.check": "সার্ভারের ইমেজ যাচাই",
+  "ota.checkOk": "ইমেজের গঠন ঠিক আছে",
+  "ota.releases": "ফার্মওয়্যার ফাইলসমূহ",
+  "ota.jobs": "হালনাগাদ কাজ",
+  "ota.progress": "অগ্রগতি",
+  "ota.installed": "ইনস্টল করা সংস্করণ",
+  "ota.candidate": "প্রার্থী সংস্করণ",
+  "ota.damagedNote": "সার্ভারের যাচাইয়ে ব্যর্থ: ডিভাইস এটি প্রত্যাখ্যান করবে বলে প্রত্যাশিত (OTA_REJECTED)।",
 };
 
 export const dictionaries = { en, bn } as const;

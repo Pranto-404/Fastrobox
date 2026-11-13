@@ -171,6 +171,20 @@ Oldest first, ≤ 200 items per call, original `seq` and `ts`. Response lists ea
 SYNCING → LIVE on the dashboard. Half-written records must be discarded on the device
 (e.g. CRC per record).
 
+## OTA (Level 5)
+
+`OTA_UPDATE` command payload: `{"job_id","version","size","sha256","path"}`.
+
+1. `GET {path}` (= `/ota/{job_id}/firmware`, same bearer token) → the image, with
+   `Content-Length`, `X-Firmware-Version`, `X-Firmware-SHA256`. Only the device the job belongs to can download it.
+2. While downloading/verifying: `POST /ota/{job_id}/progress {"status":"downloading","progress":40}`.
+3. Stream into the other OTA partition with `Update`; compare the SHA-256 and size; if they differ
+   or `Update.end()` fails → `Update.abort()`, keep running, send event `OTA_REJECTED` and ack the
+   command `rejected`.
+4. On success: progress `installed`, reboot; the new image stays *pending verify* until it reaches
+   the server within 60 s, then marks itself valid and sends `OTA_DONE` (detail = new version);
+   otherwise it rolls back and the old firmware sends `OTA_ROLLBACK` after reboot.
+
 ## GET /time
 
 `{"epoch_ms":…,"iso":"…"}` — unauthenticated server clock.

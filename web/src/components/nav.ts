@@ -27,6 +27,7 @@ export const NAV: NavItem[] = [
   { href: "/admin/cards", key: "nav.cards", icon: "CreditCard", roles: ["admin"], group: "admin" },
   { href: "/admin/schedules", key: "nav.schedules", icon: "CalendarClock", roles: ["admin"], group: "admin" },
   { href: "/admin/settings", key: "nav.settings", icon: "SlidersHorizontal", roles: ["admin"], group: "admin" },
+  { href: "/admin/firmware", key: "nav.firmware", icon: "HardDriveUpload", roles: ["admin"], group: "admin" },
   { href: "/admin/login-history", key: "nav.loginHistory", icon: "History", roles: ["admin"], group: "admin" },
 ];
 
