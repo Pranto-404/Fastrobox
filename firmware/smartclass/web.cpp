@@ -74,19 +74,25 @@ static void handleStatus() {
     strftime(timeBuf, sizeof(timeBuf), "%Y-%m-%d %H:%M:%S", &t);
   }
   const char *conn = s.setupMode ? "SETUP" : (s.serverLive ? "LIVE" : "OFFLINE");
-  char json[700];
+  char hi[12] = "null";
+  if (s.hiValid) snprintf(hi, sizeof(hi), "%.1f", s.heatIndex);
+  const char *notice = (s.notice[0] && (int32_t)(s.noticeUntil - millis()) > 0) ? s.notice : "";
+  char json[900];
   snprintf(json, sizeof(json),
-           "{\"device_id\":\"%s\",\"room_id\":\"%s\",\"local_time\":\"%s\",\"temp_c\":%s,\"rh\":%s,\"status\":\"SAFE\","
+           "{\"device_id\":\"%s\",\"room_id\":\"%s\",\"local_time\":\"%s\",\"temp_c\":%s,\"rh\":%s,\"status\":\"%s\","
+           "\"heat_index_c\":%s,\"trend\":\"%s\",\"fire\":%s,\"silenced\":%s,\"panic\":%s,\"notice\":\"%s\","
            "\"flame\":%s,\"door\":\"%s\",\"last_uid\":\"%s\",\"rssi\":%d,\"wifi\":%s,\"chip_temp_c\":%.1f,\"fw\":\"%s\","
            "\"connection\":\"%s\",\"ip\":\"%s\",\"mdns\":\"%s.local\",\"uptime_s\":%lu,\"pending\":%u,"
            "\"dht_error\":%s,\"rfid_error\":%s,\"quality\":\"%s\"}",
            deviceId(), esc(s.roomId).c_str(), timeBuf,
            (s.dhtHasReading && !s.dhtError) ? String(s.tempC, 1).c_str() : "null",
-           (s.dhtHasReading && !s.dhtError) ? String(s.rh, 0).c_str() : "null", s.flame ? "true" : "false",
+           (s.dhtHasReading && !s.dhtError) ? String(s.rh, 0).c_str() : "null", overallStatus(s), hi, trendName(s),
+           s.fire ? "true" : "false", s.silenced ? "true" : "false", s.panic ? "true" : "false", notice,
+           s.flame ? "true" : "false",
            s.doorUnlocked ? "UNLOCKED" : "LOCKED", s.lastUid, s.wifiConnected ? s.rssi : 0,
            s.wifiConnected ? "true" : "false", s.chipTempC, FW_VERSION, conn, s.ip, mdnsName(),
            (unsigned long)uptimeSeconds(), s.pending, s.dhtError ? "true" : "false", s.rfidError ? "true" : "false",
-           (s.dhtHasReading && !s.dhtError) ? "good" : "bad");
+           s.qualityGood ? "good" : "bad");
   server.sendHeader("Cache-Control", "no-store");
   server.send(200, "application/json", json);
 }

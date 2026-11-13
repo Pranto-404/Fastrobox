@@ -3,6 +3,7 @@
 #include "outbox.h"
 #include "settings.h"
 #include "certs.h"
+#include "safety.h"
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
@@ -35,6 +36,42 @@ static int post(const char *path, const char *body) {
   return code;
 }
 
+// Commands come back as plain text lines "type|arg". Reset fire / register a Teacher tag.
+static void runCommand(const String &line) {
+  int bar = line.indexOf('|');
+  String type = bar < 0 ? line : line.substring(0, bar);
+  String arg = bar < 0 ? "" : line.substring(bar + 1);
+  logf("[CMD] from platform: %s %s", type.c_str(), arg.c_str());
+  if (type == "reset_fire") safetyResetFire(arg.length() ? arg.c_str() : "platform");
+  else if (type == "register_teacher") safetyArmTeacherRegistration();
+}
+
+static void pollCommands() {
+  HTTPClient http;
+  http.setReuse(true);
+  http.setConnectTimeout(5000);
+  http.setTimeout(6000);
+  String path = String("/api/v1/commands?device_id=") + deviceId();
+  if (!http.begin(tls, SERVER_HOST, SERVER_PORT, path, true)) return;
+  http.addHeader("Authorization", String("Bearer ") + token);
+  int code = http.GET();
+  if (code == 200) {
+    String body = http.getString();
+    lastOk = millis();
+    setLive(true);
+    int start = 0;
+    while (start < (int)body.length()) {
+      int nl = body.indexOf('\n', start);
+      if (nl < 0) nl = body.length();
+      String line = body.substring(start, nl);
+      line.trim();
+      if (line.length()) runCommand(line);
+      start = nl + 1;
+    }
+  }
+  http.end();
+}
+
 static void uplinkTask(void *) {
   tls.setCACert(CA_BUNDLE);
   tls.setHandshakeTimeout(8);
@@ -48,9 +85,15 @@ static void uplinkTask(void *) {
       vTaskDelay(pdMS_TO_TICKS(500));
       continue;
     }
+    static uint32_t lastPoll = 0;
+    if (millis() - lastPoll >= COMMAND_POLL_MS) {  // also the heartbeat that keeps the device "online"
+      lastPoll = millis();
+      token = loadNetConfig().token;
+      pollCommands();
+    }
     Record r;
     if (!outboxPeek(r)) {
-      ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(500));  // woken as soon as something is queued
+      ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(200));  // woken as soon as something is queued
       continue;
     }
     if (!recordToJson(r, json, sizeof(json))) {  // clock not set yet: wait for internet time

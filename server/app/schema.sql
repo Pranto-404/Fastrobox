@@ -62,3 +62,15 @@ CREATE TABLE IF NOT EXISTS device_status_log (
 
 CREATE INDEX IF NOT EXISTS telemetry_device_ts ON telemetry (device_id, ts DESC);
 CREATE INDEX IF NOT EXISTS events_device_ts    ON events (device_id, ts DESC);
+
+-- Commands from the platform to a device (Reset fire, register a Teacher tag, ...).
+CREATE TABLE IF NOT EXISTS commands (
+  id           BIGSERIAL PRIMARY KEY,
+  device_id    TEXT NOT NULL,
+  type         TEXT NOT NULL,
+  arg          TEXT NOT NULL DEFAULT '',
+  created_by   TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  delivered_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS commands_pending ON commands (device_id) WHERE delivered_at IS NULL;

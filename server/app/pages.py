@@ -28,6 +28,9 @@ RECORDS_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
  <div class="card"><div class="muted">Telemetry rows</div><div class="big" id="ct">-</div></div>
  <div class="card"><div class="muted">Event rows</div><div class="big" id="ce">-</div></div>
  <div class="card" id="devs"></div>
+ <div class="card"><button onclick="cmd('reset-fire')" style="padding:8px 12px;font-weight:700;border:0;border-radius:6px;background:#c62828;color:#fff;cursor:pointer">Reset fire</button>
+ <button onclick="cmd('register-teacher')" style="padding:8px 12px;font-weight:700;border:0;border-radius:6px;background:#455a64;color:#fff;cursor:pointer;margin-left:6px">Register Teacher tag</button>
+ <div id="cmo" class="muted" style="margin-top:6px"></div></div>
  <div class="card"><button id="rp" onclick="replay()" style="padding:8px 12px;font-weight:700;border:0;border-radius:6px;background:#1f3a5f;color:#fff;cursor:pointer">Replay test: resend newest message</button>
  <div id="rpo" class="muted" style="margin-top:6px;max-width:420px;white-space:normal"></div></div>
 </div>
@@ -66,6 +69,12 @@ async function load(){
       ['room',x=>x.room_id],['type',x=>'<b>'+x.type+'</b>'],['detail',x=>x.detail]], d.events);
     table(document.getElementById('ts'), [['time (Dhaka)',x=>dhaka(x.at)],['device',x=>x.device_id],['state',x=>x.state]], d.status_log);
   }catch(e){}
+}
+async function cmd(c){
+  const o=document.getElementById('cmo'); o.textContent='sending...';
+  try{const r=await fetch('/api/admin/'+c,{method:'POST'}); const d=await r.json();
+    o.textContent=r.ok?('Sent "'+d.queued+'" to '+d.device_id+' (delivered within ~1 s)'+(c=='register-teacher'?': now tap the Teacher tag':'')):'error '+r.status;
+  }catch(e){o.textContent='error: '+e}
 }
 async function replay(){
   const o=document.getElementById('rpo'); o.textContent='sending...';

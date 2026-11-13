@@ -77,3 +77,12 @@ const char *mdnsName() {
   }
   return name;
 }
+
+const char *heatStatusName(uint8_t s) { return s == 2 ? "DANGER" : s == 1 ? "WARNING" : "SAFE"; }
+
+const char *overallStatus(const DeviceState &s) { return s.fire ? "FIRE" : heatStatusName(s.heatStatus); }
+
+const char *trendName(const DeviceState &s) {
+  if (!s.trendValid) return "STABLE";
+  return s.trend > 0 ? "RISING" : s.trend < 0 ? "FALLING" : "STABLE";
+}

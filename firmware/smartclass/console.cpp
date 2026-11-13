@@ -1,6 +1,7 @@
 #include "console.h"
 #include "shared.h"
 #include "wifinet.h"
+#include "safety.h"
 
 void printStatusLine() {
   DeviceState s = stateSnapshot();
@@ -9,12 +10,13 @@ void printStatusLine() {
     snprintf(t, sizeof(t), "%.1fC", s.tempC);
     snprintf(rh, sizeof(rh), "%.0f%%", s.rh);
   }
-  char rssi[8] = "-";
+  char rssi[8] = "-", hi[12] = "-";
   if (s.wifiConnected) snprintf(rssi, sizeof(rssi), "%d", s.rssi);
-  // Fields of levels not built yet print "-": HI and trend (Level 3).
-  logf("[STATUS] up=%lus T=%s RH=%s HI=- flame=%d door=%s state=SAFE trend=- rssi=%s heap=%luk psram=%luk "
+  if (s.hiValid) snprintf(hi, sizeof(hi), "%.1fC", s.heatIndex);
+  logf("[STATUS] up=%lus T=%s RH=%s HI=%s flame=%d door=%s state=%s trend=%s rssi=%s heap=%luk psram=%luk "
        "chip=%.1fC fw=%s",
-       (unsigned long)uptimeSeconds(), t, rh, s.flame ? 1 : 0, s.doorUnlocked ? "UNLOCKED" : "LOCKED", rssi,
+       (unsigned long)uptimeSeconds(), t, rh, hi, s.flame ? 1 : 0, s.doorUnlocked ? "UNLOCKED" : "LOCKED",
+       overallStatus(s), trendName(s), rssi,
        (unsigned long)(ESP.getFreeHeap() / 1024), (unsigned long)(ESP.getFreePsram() / 1024), s.chipTempC,
        FW_VERSION);
 }
@@ -45,6 +47,7 @@ static void handleCommand(String cmd) {
     logf("[CMD]   hang    freeze the main task (watchdog test)");
     logf("[CMD]   reset   clear saved Wi-Fi and restart in setup mode (Level 2)");
     logf("[CMD]   csi     Wi-Fi CSI packets/s, subcarriers, channel (Level 11)");
+    logf("[CMD]   teacher the next tapped tag is saved as a Teacher tag");
   } else if (cmd == "status") {
     printStatusLine();
   } else if (cmd == "health") {
@@ -62,6 +65,8 @@ static void handleCommand(String cmd) {
   } else if (cmd == "reset") {
     logf("[CMD] reset: clearing saved Wi-Fi details");
     wifiFactoryReset();
+  } else if (cmd == "teacher") {
+    safetyArmTeacherRegistration();
   } else if (cmd == "csi") {
     logf("[CMD] csi: Wi-Fi CSI arrives in Level 11");
   } else {

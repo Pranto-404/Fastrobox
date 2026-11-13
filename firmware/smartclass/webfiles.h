@@ -71,14 +71,24 @@ h1{font-size:20px;margin:6px 0 2px}.sub{color:#555;font-size:13px}
 .c{background:#fff;border-radius:10px;padding:10px 12px;box-shadow:0 1px 3px #0002}
 .k{color:#666;font-size:12px}.v{font-size:20px;font-weight:700;margin-top:2px;word-break:break-all}
 .wide{grid-column:1/3}.warn{color:#c62828}
+.banner{display:none;margin-top:10px;padding:14px;border-radius:10px;color:#fff;font-size:24px;font-weight:800;text-align:center}
+.fire{background:#c62828;animation:b 0.4s steps(2) infinite}.panic{background:#6a1b9a}.note{background:#ef6c00;font-size:18px}
+@keyframes b{50%{background:#7f0000}}
+.SAFE{color:#2e7d32}.WARNING{color:#e6a100}.DANGER,.FIRE{color:#c62828}
 </style></head><body><main>
 <h1>SmartClass <span id="dev"></span></h1>
 <div class="sub">Room <b id="room">-</b> · <span id="time">-</span> (Asia/Dhaka) · updated <span id="upd">-</span></div>
 <div style="margin-top:8px">Connection: <span class="badge" id="conn">-</span> <span class="sub" id="pend"></span></div>
+<div class="banner fire" id="bfire">FIRE &ndash; EVACUATE</div>
+<div class="banner panic" id="bpanic">PANIC</div>
+<div class="banner note" id="bnote"></div>
 <div class="grid">
 <div class="c"><div class="k">Temperature</div><div class="v" id="t">-</div></div>
 <div class="c"><div class="k">Humidity</div><div class="v" id="rh">-</div></div>
 <div class="c"><div class="k">Status</div><div class="v" id="st">-</div></div>
+<div class="c"><div class="k">Heat index</div><div class="v" id="hi">-</div></div>
+<div class="c"><div class="k">Trend</div><div class="v" id="tr">-</div></div>
+<div class="c"><div class="k">Data quality</div><div class="v" id="q">-</div></div>
 <div class="c"><div class="k">Flame</div><div class="v" id="fl">-</div></div>
 <div class="c"><div class="k">Door</div><div class="v" id="door">-</div></div>
 <div class="c"><div class="k">Last card UID</div><div class="v" id="uid">-</div></div>
@@ -95,7 +105,12 @@ async function load(){
     $('conn').textContent=s.connection; $('conn').className='badge '+s.connection;
     $('pend').textContent=s.pending?s.pending+' record(s) waiting to be sent':'';
     $('t').textContent=s.temp_c==null?'sensor error':s.temp_c+' °C'; $('t').className='v'+(s.temp_c==null?' warn':'');
-    $('rh').textContent=s.rh==null?'sensor error':s.rh+' %'; $('st').textContent=s.status;
+    $('rh').textContent=s.rh==null?'sensor error':s.rh+' %'; $('st').textContent=s.status; $('st').className='v '+s.status;
+    $('hi').textContent=s.heat_index_c==null?'-':s.heat_index_c+' °C'; $('tr').textContent=s.trend;
+    $('q').textContent=s.quality; $('q').className='v'+(s.quality=='bad'?' warn':'');
+    $('bfire').style.display=s.fire?'block':'none'; $('bfire').innerHTML='FIRE &ndash; EVACUATE'+(s.silenced?'<div style="font-size:14px">alarm silenced by Teacher &middot; door stays UNLOCKED</div>':'');
+    $('bpanic').style.display=s.panic?'block':'none';
+    $('bnote').style.display=s.notice?'block':'none'; $('bnote').textContent=s.notice;
     $('fl').textContent=s.flame?'FLAME':'no flame'; $('fl').className='v'+(s.flame?' warn':'');
     $('door').textContent=s.door; $('uid').textContent=s.last_uid||'-'+(s.rfid_error?' (reader error)':'');
     $('rssi').textContent=s.wifi?s.rssi+' dBm':'-'; $('chip').textContent=s.chip_temp_c+' °C'; $('fw').textContent=s.fw;

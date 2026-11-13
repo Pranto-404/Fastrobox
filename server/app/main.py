@@ -17,7 +17,7 @@ import urllib.request
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Header, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from pydantic import BaseModel
 
@@ -96,7 +96,8 @@ def _mark_seen(conn, device_id: str, room_id: str) -> None:
     """Update last_seen; if the device was offline, log that it is ONLINE again."""
     row = conn.execute(
         """INSERT INTO devices (device_id, room_id, online, last_seen) VALUES (%s, %s, TRUE, now())
-           ON CONFLICT (device_id) DO UPDATE SET room_id = EXCLUDED.room_id, last_seen = now(), online = TRUE
+           ON CONFLICT (device_id) DO UPDATE SET room_id = COALESCE(EXCLUDED.room_id, devices.room_id),
+                                                 last_seen = now(), online = TRUE
            RETURNING (xmax = 0) AS inserted""",
         (device_id, room_id),
     ).fetchone()
@@ -185,6 +186,41 @@ def post_event(e: Event, authorization: Optional[str] = Header(None)):
                 (e.detail.removeprefix("reason="), e.device_id),
             )
     return {"result": "stored", "seq": e.seq}
+
+
+@app.get("/api/v1/commands", response_class=PlainTextResponse)
+def get_commands(device_id: str, authorization: Optional[str] = Header(None)):
+    """Polled by the device every second (also its heartbeat). One command per line: "type|arg"."""
+    check_device(device_id, authorization)
+    with db.pool.connection() as conn, conn.transaction():
+        row = conn.execute("SELECT room_id FROM devices WHERE device_id = %s", (device_id,)).fetchone()
+        _mark_seen(conn, device_id, row["room_id"] if row else None)
+        rows = conn.execute(
+            """UPDATE commands SET delivered_at = now()
+               WHERE id IN (SELECT id FROM commands WHERE device_id = %s AND delivered_at IS NULL ORDER BY id)
+               RETURNING type, arg""",
+            (device_id,),
+        ).fetchall()
+    return "".join(f"{r['type']}|{r['arg']}\n" for r in rows)
+
+
+def queue_command(device_id: str, ctype: str, arg: str, by: str) -> dict:
+    with db.pool.connection() as conn:
+        conn.execute(
+            "INSERT INTO commands (device_id, type, arg, created_by) VALUES (%s, %s, %s, %s)",
+            (device_id, ctype, arg, by),
+        )
+    return {"queued": ctype, "device_id": device_id}
+
+
+@app.post("/api/admin/reset-fire")
+def admin_reset_fire(device_id: str = "T07-D1", user: str = Depends(check_admin)):
+    return queue_command(device_id, "reset_fire", user, user)
+
+
+@app.post("/api/admin/register-teacher")
+def admin_register_teacher(device_id: str = "T07-D1", user: str = Depends(check_admin)):
+    return queue_command(device_id, "register_teacher", "", user)
 
 
 @app.get("/api/v1/time")

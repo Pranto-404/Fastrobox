@@ -62,3 +62,23 @@ uint32_t nextSeq() {
   xSemaphoreGive(seqMutex);
   return s;
 }
+
+bool loadFireLatched() { return prefs.getBool("fire", false); }
+bool loadSilenced() { return prefs.getBool("silenced", false); }
+
+void saveFireState(bool latched, bool silenced) {
+  prefs.putBool("fire", latched);
+  prefs.putBool("silenced", silenced);
+}
+
+String loadTeacherTags() { return prefs.getString("teachers", ""); }
+
+bool isTeacherTag(const char *uid) {
+  String key = String(uid) + ",";
+  return loadTeacherTags().indexOf(key) >= 0;
+}
+
+void addTeacherTag(const char *uid) {
+  if (isTeacherTag(uid)) return;
+  prefs.putString("teachers", loadTeacherTags() + uid + ",");
+}

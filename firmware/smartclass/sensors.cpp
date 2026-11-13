@@ -5,6 +5,7 @@
 #include <DHTesp.h>
 #include "esp_task_wdt.h"
 #include "outbox.h"
+#include "safety.h"
 
 static DHTesp dht;
 static MFRC522 rfid(PIN_RFID_SS, PIN_RFID_RST);
@@ -32,6 +33,7 @@ static void dhtTask(void *) {
         s.rh = v.humidity;
         s.dhtHasReading = true;
         s.dhtError = false;
+        s.dhtReads++;
       });
       if (wasError) logf("[ERROR] SENSOR ERROR CLEARED: DHT11");
       fails = 0;
@@ -96,6 +98,7 @@ static void rfidTask(void *) {
           withState([&](DeviceState &s) { strlcpy(s.lastUid, uid, sizeof(s.lastUid)); });
           logf("[CARD] uid=%s", uid);
           emitEvent("CARD_TAP", uid);  // sent to the cloud at once
+          safetyOnCardTap(uid);         // Teacher tag silence / registration
         }
         absentPolls = 0;
         rfid.PICC_HaltA();

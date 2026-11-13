@@ -2,6 +2,8 @@
 // Level 1: dual-core FreeRTOS tasks, [STATUS] every second, serial commands, task watchdog, sensor errors.
 // Level 2: Wi-Fi setup access point + page, local status page (LittleFS, mDNS), reconnect, NTP time,
 //          HTTPS telemetry every 5 s with server-certificate check, CARD_TAP / BOOT events, seq never reused.
+// Level 3: Safe/Warning/Danger with hysteresis + 3 s hold, heat index, trend, quality, fire latch (flash),
+//          fail-safe door, Teacher-tag silence, touch panic pad, Reset fire from the platform.
 //
 // Tasks (see `tasks` command):
 //   core 1: main (this loop: console + [STATUS] 1 s), dht (5 s), flame (100 ms), indicator (LED/buzzer 10 ms)
@@ -22,6 +24,7 @@
 #include "wifinet.h"
 #include "web.h"
 #include "uplink.h"
+#include "safety.h"
 #include "esp_task_wdt.h"
 #include "esp_arduino_version.h"
 
@@ -56,10 +59,13 @@ void setup() {
     s.flame = flame;
     s.doorUnlocked = flame;
   });
-  logf("[EVENT] DOOR %s (flame at start-up: %s)", flame ? "UNLOCKED" : "LOCKED", flame ? "yes" : "no");
+  safetyBegin();  // a fire latched before a power cut keeps the door UNLOCKED
+  logf("[EVENT] DOOR %s (flame at start-up: %s)", stateSnapshot().doorUnlocked ? "UNLOCKED" : "LOCKED",
+       flame ? "yes" : "no");
 
   startIndicatorTask();
   startSensorTasks();
+  startSafetyTasks();
   startTelemetryTask();
   startWifiTask();
   startWebTask();

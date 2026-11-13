@@ -53,7 +53,11 @@ void queueTelemetry() {
   r.rh = s.rh;
   r.flame = s.flame;
   r.unlocked = s.doorUnlocked;
-  r.qualityGood = r.hasTH;
+  r.qualityGood = s.qualityGood;
+  r.hiValid = s.hiValid;
+  r.heatIndex = s.heatIndex;
+  strlcpy(r.status, overallStatus(s), sizeof(r.status));
+  strlcpy(r.trend, trendName(s), sizeof(r.trend));
   r.rssi = s.wifiConnected ? s.rssi : 0;
   r.heapKb = ESP.getFreeHeap() / 1024;
   r.chipC = s.chipTempC;
@@ -103,7 +107,8 @@ bool recordToJson(const Record &r, char *out, size_t len) {
     snprintf(out, len, "{\"device_id\":\"%s\",\"room_id\":\"%s\",\"seq\":%lu,\"ts\":%lu,\"type\":\"%s\",\"detail\":\"%s\"}",
              deviceId(), room, (unsigned long)r.seq, (unsigned long)ts, r.type, r.detail);
   } else {
-    char t[12] = "null", h[12] = "null", rs[8] = "null";
+    char t[12] = "null", h[12] = "null", rs[8] = "null", hi[12] = "null";
+    if (r.hiValid) snprintf(hi, sizeof(hi), "%.1f", r.heatIndex);
     if (r.hasTH) {
       snprintf(t, sizeof(t), "%.1f", r.tempC);
       snprintf(h, sizeof(h), "%.0f", r.rh);
@@ -111,10 +116,10 @@ bool recordToJson(const Record &r, char *out, size_t len) {
     if (r.rssi) snprintf(rs, sizeof(rs), "%d", r.rssi);
     snprintf(out, len,
              "{\"device_id\":\"%s\",\"room_id\":\"%s\",\"seq\":%lu,\"ts\":%lu,\"uptime_s\":%lu,\"temp_c\":%s,\"rh\":%s,"
-             "\"heat_index_c\":null,\"flame\":%s,\"door\":\"%s\",\"status\":\"SAFE\",\"heat_trend\":null,\"rssi\":%s,"
+             "\"heat_index_c\":%s,\"flame\":%s,\"door\":\"%s\",\"status\":\"%s\",\"heat_trend\":\"%s\",\"rssi\":%s,"
              "\"heap_kb\":%u,\"chip_temp_c\":%.1f,\"fw\":\"%s\",\"quality\":\"%s\"}",
-             deviceId(), room, (unsigned long)r.seq, (unsigned long)ts, (unsigned long)r.uptimeS, t, h,
-             r.flame ? "true" : "false", r.unlocked ? "UNLOCKED" : "LOCKED", rs, r.heapKb, r.chipC, FW_VERSION,
+             deviceId(), room, (unsigned long)r.seq, (unsigned long)ts, (unsigned long)r.uptimeS, t, h, hi,
+             r.flame ? "true" : "false", r.unlocked ? "UNLOCKED" : "LOCKED", r.status, r.trend, rs, r.heapKb, r.chipC, FW_VERSION,
              r.qualityGood ? "good" : "bad");
   }
   return true;

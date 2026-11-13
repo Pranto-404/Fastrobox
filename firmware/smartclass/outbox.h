@@ -21,6 +21,10 @@ struct Record {
   int16_t rssi;
   uint16_t heapKb;
   float chipC;
+  bool hiValid;
+  float heatIndex;
+  char status[8];   // SAFE / WARNING / DANGER / FIRE
+  char trend[8];    // RISING / STABLE / FALLING
 };
 
 void outboxBegin();

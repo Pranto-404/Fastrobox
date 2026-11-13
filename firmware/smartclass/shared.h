@@ -26,7 +26,25 @@ struct DeviceState {
   int rssi = 0;
   char ip[16] = "";
   uint16_t pending = 0;        // records waiting to be sent
+  // Safety (Level 3)
+  uint32_t dhtReads = 0;       // increases on every good DHT11 reading
+  uint8_t heatStatus = 0;      // 0 SAFE, 1 WARNING, 2 DANGER (after the 3 s hold)
+  bool qualityGood = false;    // every reading trustworthy
+  bool hiValid = false;
+  float heatIndex = 0;
+  int8_t trend = 0;            // -1 FALLING, 0 STABLE, 1 RISING
+  bool trendValid = false;
+  bool fire = false;           // fire latched (kept in flash)
+  bool silenced = false;
+  bool panic = false;          // panic alarm sounding
+  uint32_t touchBaseline = 0;
+  char notice[48] = "";        // short message for the local page, e.g. CANNOT SILENCE
+  uint32_t noticeUntil = 0;
 };
+
+const char *heatStatusName(uint8_t s);
+const char *overallStatus(const DeviceState &s);  // FIRE / DANGER / WARNING / SAFE
+const char *trendName(const DeviceState &s);
 
 // "T07-D1"
 const char *deviceId();
