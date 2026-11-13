@@ -8,6 +8,7 @@ Our entry for the **FastRobox 1.0 Techathon Grand Finale** (BUBT). The challenge
 |---|---|
 | [`docs/PLAN.md`](docs/PLAN.md) | Master plan: strategy, architecture, device↔server contract, pin map, how to build each level, prep schedule, event-day runbook, judging-call strategy, risks |
 | [`docs/CHECKLIST.md`](docs/CHECKLIST.md) | Every requirement from the question paper as a tickable checklist. Use it for every rehearsal. |
+| [`docs/WIRING.md`](docs/WIRING.md) | Kit wiring (pin by pin) and how to run the hardware self-test (`firmware/selftest`) |
 | [`docs/JUDGING_SCRIPT.md`](docs/JUDGING_SCRIPT.md) | The judges' exact test rounds (A: L1–3, B: L4–8, C: L9–12) with our prep for each row. Rehearse with this. |
 | [`docs/writeups/TEMPLATE.md`](docs/writeups/TEMPLATE.md) | Write-up template (5 required headings) for each level |
 

@@ -82,7 +82,7 @@ flowchart LR
   subgraph Device[ESP32-S3-CAM]
     S[Sensors: DHT11, Flame, RC522, Touch] --> SM[State machine\n(status, fire, panic, door)]
     SM --> SIG[RGB LED + Buzzer]
-    CAM[OV2640 camera] --> FD[On-device face detect\n(esp-dl)]
+    CAM[OV3660 camera] --> FD[On-device face detect\n(esp-dl)]
     SM --> OB[(Outbox\nLittleFS log)]
     FD --> NET
     OB --> NET[Net tasks\nHTTPS + cert check]
@@ -161,9 +161,9 @@ All calls are HTTPS with `Authorization: Bearer <device token>`. The token is ty
 
 ---
 
-## 4. Hardware and pin map (proposed; **verify on day 1 against the board's schematic**)
+## 4. Hardware and pin map (**confirmed against the real kit**; full guide in [`WIRING.md`](WIRING.md))
 
-On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPIO 4–13 and 15–18, the onboard WS2812 RGB LED is on **GPIO 48**, BOOT is on **GPIO 0**, and octal PSRAM uses **GPIO 35–37**, so those are off-limits. The touch-capable pins are GPIO 1–14.
+The kit board is an **ESP32-S3 WROOM with module ESP32-S3-N16R8** (16 MB flash, 8 MB octal PSRAM). The camera is an **OV3660** (3 MP), not an OV2640: the firmware must set `vflip=1`. Face-detect timing must be re-measured on this sensor. The layout is Freenove-style: the camera uses GPIO 4–13 and 15–18, the onboard WS2812 RGB LED is on **GPIO 48**, BOOT is on **GPIO 0**, and octal PSRAM uses **GPIO 35–37**, so those are off-limits. The touch-capable pins are GPIO 1–14.
 
 | Part | Pin(s) | Notes |
 |---|---|---|
@@ -175,9 +175,9 @@ On typical ESP32-S3-CAM boards (Freenove-style, N8R8/N16R8), the camera uses GPI
 | RGB LED | 48 (onboard) | `neopixelWrite()`; driven only by the signal task |
 | BOOT button | 0 (onboard) | Hold 5 s → clear Wi-Fi and enter setup mode |
 
-`include/pins.h` holds **board variants** selected by a build flag. A `selftest` serial command blinks R/G/B, beeps, reads the RC522 version register, reads the DHT, reads flame and prints the touch baseline. That way, if the event kit's board differs, we only need a quick rebuild. Print the pin map, laminate it, and practise wiring from scratch in **under 15 minutes**.
+`firmware/selftest` (already built and compiling) is a standalone self-test of every part; flash it first. In the main firmware, `include/pins.h` holds the pin map, and a `selftest` serial command blinks R/G/B, beeps, reads the RC522 version register, reads the DHT, reads flame and prints the touch baseline. That way, if the event kit's board differs, we only need a quick rebuild. Print the pin map, laminate it, and practise wiring from scratch in **under 15 minutes**.
 
-**Partitions:** for 16 MB flash, use nvs 20K, otadata 8K, app0 4M, app1 4M, littlefs ~7.9M and coredump 64K. For 8 MB flash, use app0/app1 3M and littlefs ~1.9M. **Enable OPI PSRAM** (`board_build.arduino.memory_type = qio_opi`).
+**Partitions (16 MB flash):** nvs 20K, otadata 8K, app0 4M, app1 4M, littlefs ~7.9M, coredump 64K. **Enable OPI PSRAM** (`board_build.arduino.memory_type = qio_opi`).
 
 ---
 
